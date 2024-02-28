@@ -30,15 +30,28 @@ class PRHHelper:
     
     def populate_prh_detailed_info(self, book_soup):
         # Gather PRH details except reference number
-        prh_details_list = book_soup.find('dl', class_='caracteristicas-prod').find_all('dd', class_='value')
-        self.colleccion = prh_details_list[0].text.strip()
-        self.paginas = prh_details_list[1].text.strip()
-        self.target_de_edad = prh_details_list[2].text.strip()
-        self.tipo_de_encuadernacion = prh_details_list[3].text.strip()
-        self.idioma = prh_details_list[4].text.strip()
-        self.fecha_de_publicacion = prh_details_list[5].text.strip()
+        colleccion_tag = book_soup.find('dt', text='Colección')
+        self.colleccion = colleccion_tag.find_next_sibling('dd').text.strip()
+        
+        paginas_tag = book_soup.find('dt', text='Páginas')
+        self.paginas = paginas_tag.find_next_sibling('dd').text.strip()
+        
+        target_de_edad_tag = book_soup.find('dt', text='Target de Edad')
+        self.target_de_edad = target_de_edad_tag.find_next_sibling('dd').text.strip()
+        
+        tipo_de_encuadernacion_tag = book_soup.find('dt', text='Tipo de encuadernación')
+        self.tipo_de_encuadernacion = tipo_de_encuadernacion_tag.find_next_sibling('dd').text.strip()
+        
+        idoma_tag = book_soup.find('dt', text='Idioma')
+        self.idioma = idoma_tag.find_next_sibling('dd').text.strip()
+        
+        fecha_de_publicacion_tag = book_soup.find('dt', text='Fecha de publicación')
+        self.fecha_de_publicacion = fecha_de_publicacion_tag.find_next_sibling('dd').text.strip()
+        
         self.autor = self.author
-        self.editorial = prh_details_list[7].text.strip()
+        
+        editorial_tag = book_soup.find('dt', text='Editorial')
+        self.editorial = editorial_tag.find_next_sibling('dd').text.strip()
         
         # Get reference number 
         self.referencia = book_soup.find('div', class_='product-reference').find('span').text.strip()

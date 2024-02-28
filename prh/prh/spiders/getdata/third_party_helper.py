@@ -22,16 +22,16 @@ class ThirdPartyHelper:
                 self.name = "Tematika"
                 self.get_tematika_price(soup)
             case "sbs":
-                self.name = "SBS Liberia"
+                self.name = "SBS_Liberia"
                 self.get_sbs_price(soup)
             case "libreriahernandez":
-                self.name = "Liberia Hernandez"
+                self.name = "Libreria_Hernandez"
                 self.get_libreria_hernandez_price(soup)
             case "cuspide":
                 self.name = "Cuspide"
                 self.get_cuspide_price(soup)
             case "traslospasos":
-                self.name = "Tras los Pasos"
+                self.name = "Tras_los_Pasos"
                 self.get_traslospasos_price(soup)
             case _:
                 raise Exception("Third party site not handled", book_title, site_name, url) 

@@ -14,8 +14,7 @@ class spiders(scrapy.Spider):
         # Get all books on the page
         for book in response.css('p.productTitle a::attr(href)').getall():
             yield scrapy.Request(book, callback=self.parse_book)
-            break
-    
+
     def parse_book(self, response):
         book_soup = BeautifulSoup(response.body, 'lxml')
          
@@ -29,7 +28,23 @@ class spiders(scrapy.Spider):
         helper.populate_prh_detailed_info(book_soup)
         
         # Populate scrapy item
-        item = SBook(title=helper.title, author=helper.author, price=helper.price, publication_date=helper.publication_date, imprint=helper.imprint, third_party_prices=[], prh_details=SPRHDetails(colleccion=helper.colleccion, paginas=helper.paginas, target_de_edad=helper.target_de_edad, tipo_de_encuadernacion=helper.tipo_de_encuadernacion, idioma=helper.idioma, fecha_de_publicacion=helper.fecha_de_publicacion, autor=helper.autor, editorial=helper.editorial, referencia=helper.referencia))
+        item = SBook(title=helper.title, 
+                     author=helper.author, 
+                     price=helper.price, 
+                     publication_date=helper.publication_date, 
+                     imprint=helper.imprint, 
+                     third_party_prices=[], 
+                     prh_details=SPRHDetails(colleccion=helper.colleccion, 
+                                             paginas=helper.paginas, 
+                                             target_de_edad=helper.target_de_edad, 
+                                             tipo_de_encuadernacion=helper.tipo_de_encuadernacion, 
+                                             idioma=helper.idioma, 
+                                             fecha_de_publicacion=helper.fecha_de_publicacion, 
+                                             autor=helper.autor, 
+                                             editorial=helper.editorial, 
+                                             referencia=helper.referencia
+                                             )
+                     )
         
         # Iterate through all third party links
         for link in response.css('div.bloque_external_link a::attr(href)').getall():
