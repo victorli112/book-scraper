@@ -1,2 +1,3 @@
 # book-scraper
-research data scraper for Argentinian books 
+
+research data scraper for Argentinian books
