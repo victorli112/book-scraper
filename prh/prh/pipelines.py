@@ -18,54 +18,63 @@ THIRD_PARTY_PRH = ['Librenta', 'Buscalibre', 'Tematika', 'SBS_Liberia', 'Libreri
 class ExcelWriterPipeline:
     def open_spider(self, spider):
         self.row = 1
-        self.results = {}
+        self.results = {
+            'aventura': {},
+            'fantasia': {},
+            'literatura_contemporanea': {},
+            'novela_misterio_y_thriller': {},
+            'poesia': {},
+            'ciencia_ficcion': {},
+            'grandes_clasicos': {},
+            'novela_historica': {},
+            'novela_romantica': {}
+        }
+        self.rpt = None
         
     def close_spider(self, spider):
         # Clean the data
         # {title : {Title: x, Author: y}, title2: {Title: x, Author: y}}
-        for title, info in self.results.items():
-            for key, value in info.items():
-                if not value and key.startswith('discount'):
-                    self.results[title][key] = '0%'
+        # for title, info in self.results.items():
+        #     for key, value in info.items():
+        #         if not value and key.startswith('discount'):
+        #             self.results[title][key] = '0%'
+        #         elif not value and key.startswith('price'):
+        #             self.results[title][key] = '-1'
         
         # TO EXCEL 
         ordered_columns = ['Title', 'Author', 'Price', 'Publication Date', 'Imprint', 'Colleccion', 'Paginas', 'Target de Edad', 'Tipo de Encuadernacion', 'Idioma', 'Fecha de Publicacion', 'Autor', 'Editorial', 'Referencia', 'price_in_Librenta', 'discount_Librenta', 'price_in_Buscalibre', 'discount_Buscalibre', 'price_in_Tematika', 'discount_Tematika', 'price_in_SBS_Liberia', 'discount_SBS_Liberia', 'price_in_Libreria_Hernandez', 'discount_Libreria_Hernandez', 'price_in_Cuspide', 'discount_Cuspide', 'price_in_Tras_los_Pasos', 'discount_Tras_los_Pasos']
-        wb = Workbook("books.xlsx")
-        ws = wb.add_worksheet("Adventura") ################ TODO CHANGE TO RIGHT CATEGORY ################ 
+        wb = Workbook("penguin_random_house_books.xlsx")
 
-        first_row = 0
-        for header in ordered_columns:
-            col = ordered_columns.index(header) # We are keeping order.
-            ws.write(first_row, col, header) # We have written first row which is the header of worksheet also.
+        for category, books in self.results.items():
+            ws = wb.add_worksheet(category)
+            first_row = 0
+            for header in ordered_columns:
+                col = ordered_columns.index(header) # We are keeping order.
+                ws.write(first_row, col, header) # We have written first row which is the header of worksheet also.
 
-        row = 1
-        for book in self.results.values():
-            for _key,_value in book.items():
-                col = ordered_columns.index(_key)
-                ws.write(row, col, _value)
-            row += 1 # enter the next row
+            row = 1
+            for book in books.values():
+                for _key,_value in book.items():
+                    col = ordered_columns.index(_key)
+                    ws.write(row, col, _value)
+                row += 1 # enter the next row
+
         wb.close()
         
     def process_item(self, item, spider):
         if isinstance(item, SBook):
             self.handle_book(item, spider)
-        elif isinstance(item, SThirdPartyPrices):
-            self.handle_third_party_prices(item, spider)
         return item
     
     def handle_book(self, item, spider):
+        category_dict = self.results[item["category"]]
+                
         book_data = self.create_book_dict(item)
-        self.results[book_data["Title"]] = book_data
-        # If the item already has a row
-        # if item['title'] in self.df['Title'].values:
-        #     self.df.loc[self.df['Title'] == item['title']] = book_data
-        # else:
-        #     print(self.row ,"Creating new row with", book_data["Title"])
-        #     self.df.loc[self.row] = book_data
-        #     self.row += 1
-    
-    def handle_third_party_prices(self, item, spider):
-        pass
+        if book_data["Title"] in category_dict:
+            category_dict[book_data["Title"]] = {**category_dict[book_data["Title"]], **book_data}
+        else:
+            category_dict[book_data["Title"]] = book_data
+            print("Book added to category", item["category"])
         
     def create_book_dict(self, book_item):
         book_dict = {

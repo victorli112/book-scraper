@@ -33,17 +33,24 @@ class ThirdPartyHelper:
             case "traslospasos":
                 self.name = "Tras_los_Pasos"
                 self.get_traslospasos_price(soup)
+            case "bajalibros":
+                return
+                self.name = "Baja_Libros"
+                self.get_bajalibros_price(soup)
+            case "play": # google play skip
+                return
+            case "goto": # apple books, skip
+                return
+            case "amazon": # amazon, skip
+                return
             case _:
                 raise Exception("Third party site not handled", book_title, site_name, url) 
         
-        # if there is no price, something is wrong (parsing error, etc)
-        # if price is "-1", it is out of stock
-        if not self.price:
-            raise Exception("Price not found", url)
-        
         # normalize all values
-        self.name = unidecode.unidecode(self.name)
-        self.price = unidecode.unidecode(self.price).replace(' ','')
+        if self.name:
+            self.name = unidecode.unidecode(self.name)
+        if self.price:
+            self.price = unidecode.unidecode(self.price).replace(' ','')
         if self.discount:
             self.discount = unidecode.unidecode(self.discount)
             
@@ -53,8 +60,6 @@ class ThirdPartyHelper:
         if price:
             price = price.text
             self.price = "$" + price.strip()
-        else:
-            self.price = "-1"
         
         # No discount available
         
@@ -63,8 +68,6 @@ class ThirdPartyHelper:
         price = soup.find('p', class_='precioAhora')
         if price:
             self.price = price.find('span').text.strip()
-        else: 
-            self.price = "-1"
             
         # Get discount if possible
         discount = soup.find('div', class_='box-descuento')
@@ -73,11 +76,12 @@ class ThirdPartyHelper:
         
     def get_tematika_price(self, soup):
         # Get discount if possible
-        old_price = soup.find('p', class_='old-price')
+        current_content_soup = soup.find('div', {"id": 'jm-current-content'})
+        old_price = current_content_soup.find('p', class_='old-price')
         if old_price: 
             old_price = old_price.find('span', class_='price').text.strip()
             old_price_float = float(old_price.replace('$', '').replace('.', '').split(',')[0])
-            curr_price = soup.find('p', class_='special-price').find('span', class_='price')
+            curr_price = current_content_soup.find('p', class_='special-price').find('span', class_='price')
             if curr_price:
                 curr_price = curr_price.text.strip()
                 curr_price_float = float(curr_price.replace('$', '').replace('.', '').split(',')[0])
@@ -88,12 +92,10 @@ class ThirdPartyHelper:
             
         # No discount
         else:        
-            price = soup.find('span', class_='regular-price')
+            price = current_content_soup.find('span', class_='regular-price')
             if price: 
                 price = price.find('span', class_='price').text.strip()
                 self.price = price
-            else:
-                self.price = "-1"
         
     def get_sbs_price(self, soup):
         # Get price 
@@ -101,9 +103,6 @@ class ThirdPartyHelper:
         if price:
             price = price.text.strip()
             self.price = price
-        else:
-            self.price = "-1"
-            return
         
         # If there is a discount
         old_price = soup.find('span', class_='old-price')
@@ -119,17 +118,12 @@ class ThirdPartyHelper:
         price = soup.find('td', class_='searchPrice')
         if price:
             self.price = price.text.strip()
-        else:
-            self.price = "-1"
                 
     def get_cuspide_price(self, soup):
         price = soup.find('p', class_='product-page-price')
         if price:
             price = price.find('bdi').text.strip()
             self.price = price
-        else: # no price
-            self.price = "-1"
-            return
         
         # If there is a discount, find it and update price
         if soup.find('p', class_='price-on-sale'):
@@ -145,8 +139,12 @@ class ThirdPartyHelper:
         price = soup.find('div', class_='item-description')
         if price:
             self.price = price.find('span', class_='item-price').text.strip()
-        else:
-            self.price = "-1"
+    
+    def get_bajalibros_price(self, soup):
+        # Get price 
+        price = soup.find('div', class_='content-price')
+        if price and price.find('h4', class_='ammount'):
+            self.price = price.find('h4', class_='ammount').find('span').text.strip()
         
     def __str__(self):
         return f'name={self.name}, price={self.price}, discount={self.discount}'

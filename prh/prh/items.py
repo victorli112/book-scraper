@@ -7,6 +7,7 @@ import scrapy
 
 
 class SBook(scrapy.Item):
+    category = scrapy.Field()
     title = scrapy.Field()
     author = scrapy.Field()
     price = scrapy.Field()
