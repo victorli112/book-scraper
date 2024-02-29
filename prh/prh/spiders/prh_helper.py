@@ -1,6 +1,4 @@
 import unidecode
-
-
 class PRHHelper:
     def __init__(self):
         self.title = None

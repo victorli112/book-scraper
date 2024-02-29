@@ -11,40 +11,39 @@ class ThirdPartyHelper:
             site_name = url.split('.')[1]
         else: 
             site_name = url.split('.')[0].split('//')[1]
-        match site_name:
-            case "librenta":
-                self.name = "Librenta"
-                self.get_librenta_price(soup)
-            case "buscalibre":
-                self.name = "Buscalibre"
-                self.get_buscalibre_price(soup)
-            case "tematika":
-                self.name = "Tematika"
-                self.get_tematika_price(soup)
-            case "sbs":
-                self.name = "SBS_Liberia"
-                self.get_sbs_price(soup)
-            case "libreriahernandez":
-                self.name = "Libreria_Hernandez"
-                self.get_libreria_hernandez_price(soup)
-            case "cuspide":
-                self.name = "Cuspide"
-                self.get_cuspide_price(soup)
-            case "traslospasos":
-                self.name = "Tras_los_Pasos"
-                self.get_traslospasos_price(soup)
-            case "bajalibros":
-                return
-                self.name = "Baja_Libros"
-                self.get_bajalibros_price(soup)
-            case "play": # google play skip
-                return
-            case "goto": # apple books, skip
-                return
-            case "amazon": # amazon, skip
-                return
-            case _:
-                raise Exception("Third party site not handled", book_title, site_name, url) 
+        if site_name == "librenta":
+            self.name = "Librenta"
+            self.get_librenta_price(soup)
+        if site_name == "buscalibre":
+            self.name = "Buscalibre"
+            self.get_buscalibre_price(soup)
+        elif site_name == "tematika":
+            self.name = "Tematika"
+            self.get_tematika_price(soup)
+        elif site_name == "sbs":
+            self.name = "SBS_Liberia"
+            self.get_sbs_price(soup)
+        elif site_name == "libreriahernandez":
+            self.name = "Libreria_Hernandez"
+            self.get_libreria_hernandez_price(soup)
+        elif site_name == "cuspide":
+            self.name = "Cuspide"
+            self.get_cuspide_price(soup)
+        elif site_name == "traslospasos":
+            self.name = "Tras_los_Pasos"
+            self.get_traslospasos_price(soup)
+        elif site_name == "bajalibros":
+            return
+            self.name = "Baja_Libros"
+            self.get_bajalibros_price(soup)
+        elif site_name == "play": # google play skip
+            return
+        elif site_name == "goto": # apple books, skip
+            return
+        elif site_name == "amazon": # amazon, skip
+            return
+        else:
+            raise Exception("Third party site not handled", book_title, site_name, url) 
         
         # normalize all values
         if self.name:
@@ -71,7 +70,7 @@ class ThirdPartyHelper:
             
         # Get discount if possible
         discount = soup.find('div', class_='box-descuento')
-        if discount:
+        if discount and discount.find('strong'):
             self.discount = discount.find('strong').text.strip()
         
     def get_tematika_price(self, soup):
@@ -140,12 +139,6 @@ class ThirdPartyHelper:
         if price:
             self.price = price.find('span', class_='item-price').text.strip()
     
-    def get_bajalibros_price(self, soup):
-        # Get price 
-        price = soup.find('div', class_='content-price')
-        if price and price.find('h4', class_='ammount'):
-            self.price = price.find('h4', class_='ammount').find('span').text.strip()
-        
     def __str__(self):
         return f'name={self.name}, price={self.price}, discount={self.discount}'
     
