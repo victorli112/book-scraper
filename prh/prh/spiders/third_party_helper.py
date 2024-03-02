@@ -14,7 +14,7 @@ class ThirdPartyHelper:
         if site_name == "librenta":
             self.name = "Librenta"
             self.get_librenta_price(soup)
-        if site_name == "buscalibre":
+        elif site_name == "buscalibre":
             self.name = "Buscalibre"
             self.get_buscalibre_price(soup)
         elif site_name == "tematika":

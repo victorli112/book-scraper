@@ -12,7 +12,7 @@ class spiders(scrapy.Spider):
     handle_httpstatus_list = [404]
     start_urls = ["https://www.penguinlibros.com/ar/40915-aventuras",
                   "https://www.penguinlibros.com/ar/40919-fantasia",
-                  "https://www.penguinlibros.com/ar/40925-literatura-contemporanea",
+                  #"https://www.penguinlibros.com/ar/40925-literatura-contemporanea",
                   "https://www.penguinlibros.com/ar/40929-novela-negra-misterio-y-thriller",
                   "https://www.penguinlibros.com/ar/40933-poesia",
                   "https://www.penguinlibros.com/ar/40917-ciencia-ficcion",
@@ -30,12 +30,11 @@ class spiders(scrapy.Spider):
         all_books = response.css('p.productTitle a::attr(href)').getall()
         for book in all_books:
             yield scrapy.Request(book, callback=self.parse_book, meta={'category': category})
-            break
         
         # Go to next page if it exists
-        # next_page = response.selector.xpath('//*[@id="paginacionProductos"]/div/ul/li/a[contains(@class, "next")]/@href').get()
-        # if next_page:
-        #     yield scrapy.Request(next_page, callback=self.parse)
+        next_page = response.selector.xpath('//*[@id="paginacionProductos"]/div/ul/li/a[contains(@class, "next")]/@href').get()
+        if next_page:
+            yield scrapy.Request(next_page, callback=self.parse)
             
     def parse_book(self, response):
         book_soup = BeautifulSoup(response.body, 'lxml')
