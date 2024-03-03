@@ -8,11 +8,12 @@ from prh.spiders.third_party_helper import ThirdPartyHelper
 # do the same as scrape_prh.py but with scrapy
 class spiders(scrapy.Spider):
     name = "prh-scraper"
-    # AUTOTHROTTLE_ENABLED = True
+    DOWNLOAD_DELAY = 1.5
+    AUTOTHROTTLE_ENABLED = True
     handle_httpstatus_list = [404]
     start_urls = ["https://www.penguinlibros.com/ar/40915-aventuras",
                   "https://www.penguinlibros.com/ar/40919-fantasia",
-                  #"https://www.penguinlibros.com/ar/40925-literatura-contemporanea",
+                  "https://www.penguinlibros.com/ar/40925-literatura-contemporanea",
                   "https://www.penguinlibros.com/ar/40929-novela-negra-misterio-y-thriller",
                   "https://www.penguinlibros.com/ar/40933-poesia",
                   "https://www.penguinlibros.com/ar/40917-ciencia-ficcion",

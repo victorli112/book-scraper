@@ -34,8 +34,6 @@ class ThirdPartyHelper:
             self.get_traslospasos_price(soup)
         elif site_name == "bajalibros":
             return
-            self.name = "Baja_Libros"
-            self.get_bajalibros_price(soup)
         elif site_name == "play": # google play skip
             return
         elif site_name == "goto": # apple books, skip
@@ -120,7 +118,7 @@ class ThirdPartyHelper:
                 
     def get_cuspide_price(self, soup):
         price = soup.find('p', class_='product-page-price')
-        if price:
+        if price and price.find('bdi'):
             price = price.find('bdi').text.strip()
             self.price = price
         
