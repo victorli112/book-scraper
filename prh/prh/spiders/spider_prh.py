@@ -8,8 +8,6 @@ from prh.spiders.third_party_helper import ThirdPartyHelper
 # do the same as scrape_prh.py but with scrapy
 class spiders(scrapy.Spider):
     name = "prh-scraper"
-    DOWNLOAD_DELAY = 1.5
-    AUTOTHROTTLE_ENABLED = True
     handle_httpstatus_list = [404]
     start_urls = ["https://www.penguinlibros.com/ar/40915-aventuras",
                   "https://www.penguinlibros.com/ar/40919-fantasia",
@@ -21,7 +19,14 @@ class spiders(scrapy.Spider):
                   "https://www.penguinlibros.com/ar/40927-novela-historica",
                   "https://www.penguinlibros.com/ar/40931-novela-romantica"]
     
+    @classmethod
+    def update_settings(cls, settings):
+        super().update_settings(settings)
+        settings.set("DOWNLOAD_DELAY", 0.25, priority="spider")
+        settings.set("AUTOTHROTTLE_ENABLED", True, priority="spider")
+    
     def parse(self, response):
+        print(self.settings.items())
         # Category of request separated by _
         category = '_'.join(response.request.url.split("/")[-1].split("-")[1:]).split('?')[0]
         if category == 'novela_negra_misterio_y_thriller':
