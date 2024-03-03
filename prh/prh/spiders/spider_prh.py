@@ -26,7 +26,7 @@ class spiders(scrapy.Spider):
         settings.set("AUTOTHROTTLE_ENABLED", True, priority="spider")
     
     def parse(self, response):
-        print(self.settings.items())
+        #print(self.settings.items())
         # Category of request separated by _
         category = '_'.join(response.request.url.split("/")[-1].split("-")[1:]).split('?')[0]
         if category == 'novela_negra_misterio_y_thriller':
