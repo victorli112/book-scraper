@@ -65,13 +65,14 @@ class ExcelWriterPipeline:
     
     def handle_book(self, item, spider):
         category_dict = self.results[item["category"]]
+        primary_key = (item["title"], item["author"], item["category"], item["price"])
                 
         book_data = self.create_book_dict(item)
-        if (book_data["Title"], book_data["Author"]) in category_dict:
-            category_dict[(book_data["Title"], book_data["Author"])] = {**category_dict[(book_data["Title"], book_data["Author"])], **book_data}
+        if primary_key in category_dict:
+            category_dict[primary_key] = {**category_dict[primary_key], **book_data}
             print("Updating book")
         else:
-            category_dict[(book_data["Title"], book_data["Author"])] = book_data
+            category_dict[primary_key] = book_data
             self.num_books += 1
             print("Book added to category", item["category"])
             if self.num_books % 100 == 0:
