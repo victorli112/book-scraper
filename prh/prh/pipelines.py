@@ -67,6 +67,7 @@ class ExcelWriterPipeline:
         book_data = self.create_book_dict(item)
         if book_data["Title"] in category_dict:
             category_dict[book_data["Title"]] = {**category_dict[book_data["Title"]], **book_data}
+            print("Updating book")
         else:
             category_dict[book_data["Title"]] = book_data
             print("Book added to category", item["category"])

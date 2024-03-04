@@ -40,6 +40,8 @@ class ThirdPartyHelper:
             return
         elif site_name == "amazon": # amazon, skip
             return
+        elif site_name == "audible":
+            return
         else:
             raise Exception("Third party site not handled", book_title, site_name, url) 
         

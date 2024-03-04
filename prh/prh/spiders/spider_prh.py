@@ -8,25 +8,50 @@ from prh.spiders.third_party_helper import ThirdPartyHelper
 # do the same as scrape_prh.py but with scrapy
 class spiders(scrapy.Spider):
     name = "prh-scraper"
-    handle_httpstatus_list = [404]
+    handle_httpstatus_list = [404, 500]
     start_urls = ["https://www.penguinlibros.com/ar/40915-aventuras",
                   "https://www.penguinlibros.com/ar/40919-fantasia",
                   "https://www.penguinlibros.com/ar/40925-literatura-contemporanea",
                   "https://www.penguinlibros.com/ar/40929-novela-negra-misterio-y-thriller",
-                  "https://www.penguinlibros.com/ar/40933-poesia",
+                  "https://www.penguinlibros.com/ar/40933-poesia"
                   "https://www.penguinlibros.com/ar/40917-ciencia-ficcion",
                   "https://www.penguinlibros.com/ar/40923-grandes-clasicos",
                   "https://www.penguinlibros.com/ar/40927-novela-historica",
                   "https://www.penguinlibros.com/ar/40931-novela-romantica"]
-    
-    @classmethod
-    def update_settings(cls, settings):
-        super().update_settings(settings)
-        settings.set("DOWNLOAD_DELAY", 0.25, priority="spider")
-        settings.set("AUTOTHROTTLE_ENABLED", True, priority="spider")
+    RETRY_HTTP_CODES = [502, 503, 504, 522, 524, 408, 429, 400]
+    custom_settings = {
+        "RETRY_HTTP_CODES": [502, 503, 504, 522, 524, 408, 429, 400],
+        "handle_httpstatus_list": [404, 500],
+        }
+
+    #def __init__(self, *args, **kwargs):
+    #    super().__init__(*args, *kwargs)
+    #    self.retries = {}
+    #    self.max_retry = 5
+
+    #@classmethod
+    #def update_settings(cls, settings):
+    #    super().update_settings(settings)
+    #    settings.set("DOWNLOAD_DELAY", 0.25, priority="spider")
+    #    settings.set("AUTOTHROTTLE_ENABLED", True, priority="spider")
     
     def parse(self, response):
-        #print(self.settings.items())
+        # we might still be getting a response from 500 errors
+        if response.status == 500:
+            f = open('error_code.txt', 'w')
+            s = f'------------ 500 ERROR ------------\n {response.url} \n {response.text}'
+            f.write(s)
+            f.close()
+            print("//////////////////// 500 ERROR ///////////////////////////////")
+            #self.retries[response.url] = self.retries.get(response.url, 0)
+            #retriesn = self.retries[response.url]
+            #if retriesn < self.max_retry: 
+            #    self.retries[response.url] += 1
+            #    yield response.request.replace(dont_filter=True)
+            #else:
+            #    print("Failed twice")
+            #    return
+
         # Category of request separated by _
         category = '_'.join(response.request.url.split("/")[-1].split("-")[1:]).split('?')[0]
         if category == 'novela_negra_misterio_y_thriller':
@@ -49,8 +74,13 @@ class spiders(scrapy.Spider):
         helper = PRHHelper()
     
         # Get basic information
-        helper.populate_prh_basic_info(book_soup)
-        
+        try:
+            helper.populate_prh_basic_info(book_soup)
+        except:
+            f = open("main_response.txt", "w")
+            s = response.url + response.status + "//////////////////////" + response.text
+            f.write(s)
+            f.close()
         # Get detailed info
         helper.populate_prh_detailed_info(book_soup)
         
@@ -76,6 +106,8 @@ class spiders(scrapy.Spider):
         
         # Iterate through all third party links
         for link in response.css('div.bloque_external_link a::attr(href)').getall():
+            if "amazon" in link:
+                continue
             yield scrapy.Request(link, callback=self.parse_third_party, meta={'item': item, 'url': link, 'bookTitle':helper.title})
         
     def parse_third_party(self, response):
