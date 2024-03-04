@@ -26,6 +26,7 @@ class spiders(scrapy.Spider):
     }
     dont_parse_third_party = ["bajalibros", "play", "goto", "amazon", "audible"]
     links = set()
+    num_duplicates = 0
     
     def parse(self, response):
         # we might still be getting a response from 500 errors
@@ -42,13 +43,14 @@ class spiders(scrapy.Spider):
         for book in all_books:
             
             # Keep track of duplicate books
-            if book in self.links:
-                print("[-D-] Duplicate book", book)
+            if (book, category) in self.links:
+                self.num_duplicates += 1
+                if self.num_duplicates % 25 == 0:
+                    print(f"[COUNT] Processed {self.num_duplicates} duplicates.")
                 continue
             else:
-                self.links.add(book)
-                
-            yield scrapy.Request(book, callback=self.parse_book, meta={'category': category})
+                self.links.add((book, category))
+                yield scrapy.Request(book, callback=self.parse_book, meta={'category': category}, dont_filter=True)
         
         # Go to next page if it exists
         next_page = response.selector.xpath('//*[@id="paginacionProductos"]/div/ul/li/a[contains(@class, "next")]/@href').get()
@@ -101,10 +103,6 @@ class spiders(scrapy.Spider):
             if any(x in link for x in self.dont_parse_third_party):
                 continue
             yield scrapy.Request(link, callback=self.parse_third_party, meta={'item': item, 'url': link, 'bookTitle':helper.title})
-        
-        # Every 100 books, print the num of duplicates in each category
-        if len(self.links) % 25 == 0:
-            print(f"[COUNT] Processed {len(self.links)} duplicates.")
         
     def parse_third_party(self, response):
         price = ThirdPartyHelper()
