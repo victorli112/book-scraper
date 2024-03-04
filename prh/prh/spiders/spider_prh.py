@@ -27,6 +27,7 @@ class spiders(scrapy.Spider):
     
     def parse(self, response):
         # we might still be getting a response from 500 errors
+        print(response.status, response.url)
         if response.status == 500 or response.status == 404:
             f = open('error_code.txt', 'w')
             s = f'------------ 500 ERROR ------------\n {response.url} \n {response.text}'
