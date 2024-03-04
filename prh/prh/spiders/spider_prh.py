@@ -25,7 +25,18 @@ class spiders(scrapy.Spider):
         "handle_httpstatus_list": [404, 500],
     }
     dont_parse_third_party = ["bajalibros", "play", "goto", "amazon", "audible"]
-    links = []
+    duplicate_books_per_category = {
+        "aventuras": [],
+        "fantasia": [],
+        "literatura_contemporanea": [],
+        "novela_misterio_y_thriller": [],
+        "poesia": [],
+        "ciencia_ficcion": [],
+        "grandes_clasicos": [],
+        "novela_historica": [],
+        "novela_romantica": []
+    }
+    links = set()
     
     def parse(self, response):
         # we might still be getting a response from 500 errors
@@ -40,10 +51,13 @@ class spiders(scrapy.Spider):
         # Get all books on the page
         all_books = response.css('p.productTitle a::attr(href)').getall()
         for book in all_books:
+            
+            # Keep track of duplicate books
             if book in self.links:
-                print("+++++++ Duplicate book", book)
+                self.duplicate_books_per_category[category].append(book)
             else:
-                self.links.append(book)
+                self.links.add(book)
+                
             yield scrapy.Request(book, callback=self.parse_book, meta={'category': category})
         
         # Go to next page if it exists
@@ -71,7 +85,7 @@ class spiders(scrapy.Spider):
             helper.populate_prh_detailed_info(book_soup)
         except:
             print("Can't parse detailed info", response.url, response.status)
-            
+        
         # Populate scrapy item
         item = SBook(category=response.meta['category'],
                      title=helper.title, 
@@ -97,6 +111,10 @@ class spiders(scrapy.Spider):
             if any(x in link for x in self.dont_parse_third_party):
                 continue
             yield scrapy.Request(link, callback=self.parse_third_party, meta={'item': item, 'url': link, 'bookTitle':helper.title})
+        
+        # Every 100 books, print the num of duplicates in each category
+        if len(self.links) % 100 == 0:
+            print(f"Processed {len(self.links)} books, counts of each category: {[(k, len(v)) for k, v in self.duplicate_books_per_category.items()]}")
         
     def parse_third_party(self, response):
         price = ThirdPartyHelper()
