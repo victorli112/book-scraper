@@ -20,15 +20,9 @@ class PRHHelper:
         self.referencia = None
         
     def populate_prh_basic_info(self, book_soup):
-        try:
-            self.title = book_soup.find('h1', class_="page-title").find('span').text.strip()
-            self.author = book_soup.find('div', class_='autorYfav').find('a').text.strip()
-            self.price = unidecode.unidecode(book_soup.find('span', class_='product-price').text.strip()).replace(' ','')
-        except:
-            f = open("no_basic.txt", "w")
-            f.write(str(book_soup))
-            f.close()
-            raise Exception("No basic information found on page? Error with response?")
+        self.title = book_soup.find('h1', class_="page-title").find('span').text.strip()
+        self.author = book_soup.find('div', class_='autorYfav').find('a').text.strip()
+        self.price = unidecode.unidecode(book_soup.find('span', class_='product-price').text.strip()).replace(' ','')
 
         # sometimes there wont be a publication date
         publication_date_element = book_soup.find('div', class_='product-category-name-editorial')

@@ -70,6 +70,7 @@ class ExcelWriterPipeline:
             print("Updating book")
         else:
             category_dict[book_data["Title"]] = book_data
+            self.num_books += 1
             print("Book added to category", item["category"])
         
         if self.num_books % 100 == 0:

@@ -67,14 +67,20 @@ class spiders(scrapy.Spider):
         try:
             helper.populate_prh_basic_info(book_soup)
         except:
-            f = open("main_response.txt", "w")
+            f = open("populate_basic_info_logging.txt", "w")
             s = response.url + response.status + "//////////////////////" + response.text
             f.write(s)
             f.close()
             
         # Get detailed info
-        helper.populate_prh_detailed_info(book_soup)
-        
+        try:
+            helper.populate_prh_detailed_info(book_soup)
+        except:
+            f = open("populate_detailed_info_logging.txt", "w")
+            s = response.url + response.status + "//////////////////////" + response.text
+            f.write(s)
+            f.close()
+            
         # Populate scrapy item
         item = SBook(category=response.meta['category'],
                      title=helper.title, 
