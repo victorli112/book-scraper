@@ -25,23 +25,12 @@ class spiders(scrapy.Spider):
         "handle_httpstatus_list": [404, 500],
     }
     dont_parse_third_party = ["bajalibros", "play", "goto", "amazon", "audible"]
-    duplicate_books_per_category = {
-        "aventuras": [],
-        "fantasia": [],
-        "literatura_contemporanea": [],
-        "novela_misterio_y_thriller": [],
-        "poesia": [],
-        "ciencia_ficcion": [],
-        "grandes_clasicos": [],
-        "novela_historica": [],
-        "novela_romantica": []
-    }
     links = set()
     
     def parse(self, response):
         # we might still be getting a response from 500 errors
         if response.status == 500 or response.status == 404:
-            print("//////////////////// 500 ERROR ///////////////////////////////", response.url)
+            print("//////////////////// 500 ERROR PARSE ///////////////////////////////", response.url)
            
         # Category of request separated by _
         category = '_'.join(response.request.url.split("/")[-1].split("-")[1:]).split('?')[0]
@@ -54,7 +43,8 @@ class spiders(scrapy.Spider):
             
             # Keep track of duplicate books
             if book in self.links:
-                self.duplicate_books_per_category[category].append(book)
+                print("[-D-] Duplicate book", book)
+                continue
             else:
                 self.links.add(book)
                 
@@ -113,8 +103,8 @@ class spiders(scrapy.Spider):
             yield scrapy.Request(link, callback=self.parse_third_party, meta={'item': item, 'url': link, 'bookTitle':helper.title})
         
         # Every 100 books, print the num of duplicates in each category
-        if len(self.links) % 100 == 0:
-            print(f"Processed {len(self.links)} books, counts of each category: {[(k, len(v)) for k, v in self.duplicate_books_per_category.items()]}")
+        if len(self.links) % 25 == 0:
+            print(f"[COUNT] Processed {len(self.links)} duplicates.")
         
     def parse_third_party(self, response):
         price = ThirdPartyHelper()

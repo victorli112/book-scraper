@@ -70,7 +70,6 @@ class ExcelWriterPipeline:
         book_data = self.create_book_dict(item)
         if primary_key in category_dict:
             category_dict[primary_key] = {**category_dict[primary_key], **book_data}
-            print("Updating book")
         else:
             category_dict[primary_key] = book_data
             self.num_books += 1
