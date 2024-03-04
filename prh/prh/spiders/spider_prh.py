@@ -10,14 +10,14 @@ class spiders(scrapy.Spider):
     name = "prh-scraper"
     handle_httpstatus_list = [404, 500]
     start_urls = ["https://www.penguinlibros.com/ar/40915-aventuras",
-                  "https://www.penguinlibros.com/ar/40919-fantasia",]
-   #               "https://www.penguinlibros.com/ar/40925-literatura-contemporanea",
-   #               "https://www.penguinlibros.com/ar/40929-novela-negra-misterio-y-thriller",
-   #               "https://www.penguinlibros.com/ar/40933-poesia",
-   #               "https://www.penguinlibros.com/ar/40917-ciencia-ficcion",
-   #               "https://www.penguinlibros.com/ar/40923-grandes-clasicos",
-   #               "https://www.penguinlibros.com/ar/40927-novela-historica",
-   #               "https://www.penguinlibros.com/ar/40931-novela-romantica"]
+                 "https://www.penguinlibros.com/ar/40919-fantasia",
+                 "https://www.penguinlibros.com/ar/40925-literatura-contemporanea",
+                 "https://www.penguinlibros.com/ar/40929-novela-negra-misterio-y-thriller",
+                 "https://www.penguinlibros.com/ar/40933-poesia",
+                 "https://www.penguinlibros.com/ar/40917-ciencia-ficcion",
+                 "https://www.penguinlibros.com/ar/40923-grandes-clasicos",
+                 "https://www.penguinlibros.com/ar/40927-novela-historica",
+                 "https://www.penguinlibros.com/ar/40931-novela-romantica"]
     
     RETRY_HTTP_CODES = [502, 503, 504, 522, 524, 408, 429, 400]
     custom_settings = {
@@ -52,9 +52,12 @@ class spiders(scrapy.Spider):
                 self.links.add((book, category))
                 yield scrapy.Request(book, callback=self.parse_book, meta={'category': category}, dont_filter=True)
         
-        # Go to next page if it exists
-        next_page = response.selector.xpath('//*[@id="paginacionProductos"]/div/ul/li/a[contains(@class, "next")]/@href').get()
-        if next_page:
+        # Go to next page if it exists and there are books on this page
+        if "pageno" in response.request.url:
+            next_page = response.request.url.split("&pageno=")[0] + "&pageno=" + str(int(response.request.url.split("&pageno=")[1]) + 1)
+        else:
+            next_page = response.request.url + "?&pageno=2"
+        if next_page and len(all_books) > 0:
             yield scrapy.Request(next_page, callback=self.parse)
             
     def parse_book(self, response):
