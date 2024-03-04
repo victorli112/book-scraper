@@ -117,18 +117,15 @@ class spiders(scrapy.Spider):
         
     def parse_third_party(self, response):
         print(response.status, response.url)
-        if response.status == 500 or response.status == 404:
-            f = open('error_code_third_party.txt', 'w')
-            s = f'------------ 500 ERROR ------------\n {response.url} \n {response.text}'
-            f.write(s)
-            f.close()
-            print("//////////////////// 500 ERROR THIRD PARTY ///////////////////////////////", response.url)
         price = ThirdPartyHelper()
-        soup = BeautifulSoup(response.body, 'lxml')
-        price.populate_price(soup, response.meta['url'], response.meta['bookTitle'])
-        
-        if not price.discount and not price.price and not price.name:
-            return
+
+        if response.status == 500 or response.status == 404:
+            price.price = None
+            price.discount = None
+            price.name = response.url.split(".")[1]
+        else:  
+            soup = BeautifulSoup(response.body, 'lxml')
+            price.populate_price(soup, response.meta['url'], response.meta['bookTitle'])
         
         item = SThirdPartyPrices(name=price.name, price=price.price, discount=price.discount)
         book_item = response.meta['item']
