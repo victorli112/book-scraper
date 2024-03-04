@@ -27,12 +27,12 @@ class spiders(scrapy.Spider):
     
     def parse(self, response):
         # we might still be getting a response from 500 errors
-        if response.status == 500:
+        if response.status == 500 or response.status == 404:
             f = open('error_code.txt', 'w')
             s = f'------------ 500 ERROR ------------\n {response.url} \n {response.text}'
             f.write(s)
             f.close()
-            print("//////////////////// 500 ERROR ///////////////////////////////")
+            print("//////////////////// 500 ERROR ///////////////////////////////", response.url)
             #self.retries[response.url] = self.retries.get(response.url, 0)
             #retriesn = self.retries[response.url]
             #if retriesn < self.max_retry: 
