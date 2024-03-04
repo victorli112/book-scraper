@@ -32,16 +32,6 @@ class ThirdPartyHelper:
         elif site_name == "traslospasos":
             self.name = "Tras_los_Pasos"
             self.get_traslospasos_price(soup)
-        elif site_name == "bajalibros":
-            return
-        elif site_name == "play": # google play skip
-            return
-        elif site_name == "goto": # apple books, skip
-            return
-        elif site_name == "amazon": # amazon, skip
-            return
-        elif site_name == "audible":
-            return
         else:
             raise Exception("Third party site not handled", book_title, site_name, url) 
         

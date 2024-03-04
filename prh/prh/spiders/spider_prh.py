@@ -22,18 +22,8 @@ class spiders(scrapy.Spider):
     custom_settings = {
         "RETRY_HTTP_CODES": [502, 503, 504, 522, 524, 408, 429, 400],
         "handle_httpstatus_list": [404, 500],
-        }
-
-    #def __init__(self, *args, **kwargs):
-    #    super().__init__(*args, *kwargs)
-    #    self.retries = {}
-    #    self.max_retry = 5
-
-    #@classmethod
-    #def update_settings(cls, settings):
-    #    super().update_settings(settings)
-    #    settings.set("DOWNLOAD_DELAY", 0.25, priority="spider")
-    #    settings.set("AUTOTHROTTLE_ENABLED", True, priority="spider")
+    }
+    dont_parse_third_party = ["bajalibros", "play", "goto", "amazon", "audible"]
     
     def parse(self, response):
         # we might still be getting a response from 500 errors
@@ -81,6 +71,7 @@ class spiders(scrapy.Spider):
             s = response.url + response.status + "//////////////////////" + response.text
             f.write(s)
             f.close()
+            
         # Get detailed info
         helper.populate_prh_detailed_info(book_soup)
         
@@ -106,7 +97,7 @@ class spiders(scrapy.Spider):
         
         # Iterate through all third party links
         for link in response.css('div.bloque_external_link a::attr(href)').getall():
-            if "amazon" in link:
+            if any(x in link for x in self.dont_parse_third_party):
                 continue
             yield scrapy.Request(link, callback=self.parse_third_party, meta={'item': item, 'url': link, 'bookTitle':helper.title})
         

@@ -11,6 +11,8 @@ BOT_NAME = "prh"
 
 SPIDER_MODULES = ["prh.spiders"]
 NEWSPIDER_MODULE = "prh.spiders"
+RETRY_HTTP_CODES = [502, 503, 504, 522, 524, 408, 429, 400]
+handle_httpstatus_list = [404, 500]
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
@@ -21,15 +23,15 @@ ROBOTSTXT_OBEY = False
 LOG_LEVEL = 'INFO'
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-#CONCURRENT_REQUESTS = 32
+CONCURRENT_REQUESTS = 32
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-#DOWNLOAD_DELAY = 3
+DOWNLOAD_DELAY = 0.25
 # The download delay setting will honor only one of:
 #CONCURRENT_REQUESTS_PER_DOMAIN = 16
-#CONCURRENT_REQUESTS_PER_IP = 16
+CONCURRENT_REQUESTS_PER_IP = 16
 
 # Disable cookies (enabled by default)
 #COOKIES_ENABLED = False

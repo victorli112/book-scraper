@@ -24,7 +24,7 @@ class ExcelWriterPipeline:
             'novela_historica': {},
             'novela_romantica': {}
         }
-        self.rpt = None
+        self.num_books = 0
         
     def close_spider(self, spider):
         # Clean the data
@@ -71,6 +71,9 @@ class ExcelWriterPipeline:
         else:
             category_dict[book_data["Title"]] = book_data
             print("Book added to category", item["category"])
+        
+        if self.num_books % 100 == 0:
+            print(f"Processed {self.num_books} books, counts of each category: {[(k, len(v)) for k, v in self.results.items()]}")
         
     def create_book_dict(self, book_item):
         book_dict = {
