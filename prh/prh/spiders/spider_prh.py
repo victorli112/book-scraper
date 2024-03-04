@@ -68,7 +68,7 @@ class spiders(scrapy.Spider):
             helper.populate_prh_basic_info(book_soup)
         except:
             f = open("populate_basic_info_logging.txt", "w")
-            s = response.url + response.status + "//////////////////////" + response.text
+            s = response.url + str(response.status) + "//////////////////////" + response.text
             f.write(s)
             f.close()
             
@@ -77,7 +77,7 @@ class spiders(scrapy.Spider):
             helper.populate_prh_detailed_info(book_soup)
         except:
             f = open("populate_detailed_info_logging.txt", "w")
-            s = response.url + response.status + "//////////////////////" + response.text
+            s = response.url + str(response.status) + "//////////////////////" + response.text
             f.write(s)
             f.close()
             
