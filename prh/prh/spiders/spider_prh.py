@@ -27,7 +27,7 @@ class spiders(scrapy.Spider):
     
     def parse(self, response):
         # we might still be getting a response from 500 errors
-        print(response.status, response.url)
+        #print(response.status, response.url)
         if response.status == 500 or response.status == 404:
             f = open('error_code.txt', 'w')
             s = f'------------ 500 ERROR ------------\n {response.url} \n {response.text}'
@@ -59,6 +59,13 @@ class spiders(scrapy.Spider):
             yield scrapy.Request(next_page, callback=self.parse)
             
     def parse_book(self, response):
+        print(response.status, response.url)
+        if response.status == 500 or response.status == 404:
+            f = open('error_code_parse_book.txt', 'w')
+            s = f'------------ 500 ERROR ------------\n {response.url} \n {response.text}'
+            f.write(s)
+            f.close()
+            print("//////////////////// 500 ERROR PARSE BOOK ///////////////////////////////", response.url)
         book_soup = BeautifulSoup(response.body, 'lxml')
     
         # Initialize helper class to store data
@@ -109,6 +116,13 @@ class spiders(scrapy.Spider):
             yield scrapy.Request(link, callback=self.parse_third_party, meta={'item': item, 'url': link, 'bookTitle':helper.title})
         
     def parse_third_party(self, response):
+        print(response.status, response.url)
+        if response.status == 500 or response.status == 404:
+            f = open('error_code_third_party.txt', 'w')
+            s = f'------------ 500 ERROR ------------\n {response.url} \n {response.text}'
+            f.write(s)
+            f.close()
+            print("//////////////////// 500 ERROR THIRD PARTY ///////////////////////////////", response.url)
         price = ThirdPartyHelper()
         soup = BeautifulSoup(response.body, 'lxml')
         price.populate_price(soup, response.meta['url'], response.meta['bookTitle'])
