@@ -9,40 +9,29 @@ from prh.spiders.third_party_helper import ThirdPartyHelper
 class spiders(scrapy.Spider):
     name = "prh-scraper"
     handle_httpstatus_list = [404, 500]
-    start_urls = [#"https://www.penguinlibros.com/ar/40915-aventuras",
-                  #"https://www.penguinlibros.com/ar/40919-fantasia",
-                  #"https://www.penguinlibros.com/ar/40925-literatura-contemporanea",
-                  #"https://www.penguinlibros.com/ar/40929-novela-negra-misterio-y-thriller",
-                  "https://www.penguinlibros.com/ar/40933-poesia"]
-                  #"https://www.penguinlibros.com/ar/40917-ciencia-ficcion",
-                  #"https://www.penguinlibros.com/ar/40923-grandes-clasicos",
-                  #"https://www.penguinlibros.com/ar/40927-novela-historica",
-                  #"https://www.penguinlibros.com/ar/40931-novela-romantica"]
+    start_urls = ["https://www.penguinlibros.com/ar/40915-aventuras",
+                  "https://www.penguinlibros.com/ar/40919-fantasia",
+                  "https://www.penguinlibros.com/ar/40925-literatura-contemporanea",
+                  "https://www.penguinlibros.com/ar/40929-novela-negra-misterio-y-thriller",
+                  "https://www.penguinlibros.com/ar/40933-poesia",
+                  "https://www.penguinlibros.com/ar/40917-ciencia-ficcion",
+                  "https://www.penguinlibros.com/ar/40923-grandes-clasicos",
+                  "https://www.penguinlibros.com/ar/40927-novela-historica",
+                  "https://www.penguinlibros.com/ar/40931-novela-romantica"]
+    
     RETRY_HTTP_CODES = [502, 503, 504, 522, 524, 408, 429, 400]
     custom_settings = {
         "RETRY_HTTP_CODES": [502, 503, 504, 522, 524, 408, 429, 400],
         "handle_httpstatus_list": [404, 500],
     }
     dont_parse_third_party = ["bajalibros", "play", "goto", "amazon", "audible"]
+    links = []
     
     def parse(self, response):
         # we might still be getting a response from 500 errors
-        #print(response.status, response.url)
         if response.status == 500 or response.status == 404:
-            f = open('error_code.txt', 'w')
-            s = f'------------ 500 ERROR ------------\n {response.url} \n {response.text}'
-            f.write(s)
-            f.close()
             print("//////////////////// 500 ERROR ///////////////////////////////", response.url)
-            #self.retries[response.url] = self.retries.get(response.url, 0)
-            #retriesn = self.retries[response.url]
-            #if retriesn < self.max_retry: 
-            #    self.retries[response.url] += 1
-            #    yield response.request.replace(dont_filter=True)
-            #else:
-            #    print("Failed twice")
-            #    return
-
+           
         # Category of request separated by _
         category = '_'.join(response.request.url.split("/")[-1].split("-")[1:]).split('?')[0]
         if category == 'novela_negra_misterio_y_thriller':
@@ -51,6 +40,10 @@ class spiders(scrapy.Spider):
         # Get all books on the page
         all_books = response.css('p.productTitle a::attr(href)').getall()
         for book in all_books:
+            if book in self.links:
+                print("+++++++ Duplicate book", book)
+            else:
+                self.links.append(book)
             yield scrapy.Request(book, callback=self.parse_book, meta={'category': category})
         
         # Go to next page if it exists
@@ -59,13 +52,9 @@ class spiders(scrapy.Spider):
             yield scrapy.Request(next_page, callback=self.parse)
             
     def parse_book(self, response):
-        print(response.status, response.url)
         if response.status == 500 or response.status == 404:
-            f = open('error_code_parse_book.txt', 'w')
-            s = f'------------ 500 ERROR ------------\n {response.url} \n {response.text}'
-            f.write(s)
-            f.close()
             print("//////////////////// 500 ERROR PARSE BOOK ///////////////////////////////", response.url)
+            
         book_soup = BeautifulSoup(response.body, 'lxml')
     
         # Initialize helper class to store data
@@ -75,19 +64,13 @@ class spiders(scrapy.Spider):
         try:
             helper.populate_prh_basic_info(book_soup)
         except:
-            f = open("populate_basic_info_logging.txt", "w")
-            s = response.url + str(response.status) + "//////////////////////" + response.text
-            f.write(s)
-            f.close()
+            print("Can't parse basic info", response.url, response.status)
             
         # Get detailed info
         try:
             helper.populate_prh_detailed_info(book_soup)
         except:
-            f = open("populate_detailed_info_logging.txt", "w")
-            s = response.url + str(response.status) + "//////////////////////" + response.text
-            f.write(s)
-            f.close()
+            print("Can't parse detailed info", response.url, response.status)
             
         # Populate scrapy item
         item = SBook(category=response.meta['category'],
@@ -116,16 +99,9 @@ class spiders(scrapy.Spider):
             yield scrapy.Request(link, callback=self.parse_third_party, meta={'item': item, 'url': link, 'bookTitle':helper.title})
         
     def parse_third_party(self, response):
-        print(response.status, response.url)
         price = ThirdPartyHelper()
-
-        if response.status == 500 or response.status == 404:
-            price.price = None
-            price.discount = None
-            price.name = response.url.split(".")[1]
-        else:  
-            soup = BeautifulSoup(response.body, 'lxml')
-            price.populate_price(soup, response.meta['url'], response.meta['bookTitle'])
+        soup = BeautifulSoup(response.body, 'lxml')
+        price.populate_price(soup, response.meta['url'], response.meta['bookTitle'])
         
         item = SThirdPartyPrices(name=price.name, price=price.price, discount=price.discount)
         book_item = response.meta['item']
