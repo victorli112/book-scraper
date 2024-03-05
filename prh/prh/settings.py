@@ -13,7 +13,8 @@ SPIDER_MODULES = ["prh.spiders"]
 NEWSPIDER_MODULE = "prh.spiders"
 RETRY_HTTP_CODES = [502, 503, 504, 522, 524, 408, 429, 400]
 handle_httpstatus_list = [404, 500]
-
+DOWNLOAD_FAIL_ON_DATALOSS = False
+RETRY_ENABLED = True
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Safari/537.36'
