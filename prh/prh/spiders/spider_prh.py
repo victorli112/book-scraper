@@ -10,14 +10,14 @@ class spiders(scrapy.Spider):
     name = "prh-scraper"
     handle_httpstatus_list = [404, 500]
     start_urls = ["https://www.penguinlibros.com/ar/40915-aventuras",
-                  "https://www.penguinlibros.com/ar/40919-fantasia",
-                  "https://www.penguinlibros.com/ar/40925-literatura-contemporanea",
-                  "https://www.penguinlibros.com/ar/40929-novela-negra-misterio-y-thriller",
-                  "https://www.penguinlibros.com/ar/40933-poesia",
-                  "https://www.penguinlibros.com/ar/40917-ciencia-ficcion",
-                  "https://www.penguinlibros.com/ar/40923-grandes-clasicos",
-                  "https://www.penguinlibros.com/ar/40927-novela-historica",
-                  "https://www.penguinlibros.com/ar/40931-novela-romantica"]
+                  "https://www.penguinlibros.com/ar/40919-fantasia",]
+   #               "https://www.penguinlibros.com/ar/40925-literatura-contemporanea",
+   #               "https://www.penguinlibros.com/ar/40929-novela-negra-misterio-y-thriller",
+   #               "https://www.penguinlibros.com/ar/40933-poesia",
+   #               "https://www.penguinlibros.com/ar/40917-ciencia-ficcion",
+   #               "https://www.penguinlibros.com/ar/40923-grandes-clasicos",
+   #               "https://www.penguinlibros.com/ar/40927-novela-historica",
+   #               "https://www.penguinlibros.com/ar/40931-novela-romantica"]
     
     RETRY_HTTP_CODES = [502, 503, 504, 522, 524, 408, 429, 400]
     custom_settings = {
@@ -45,7 +45,7 @@ class spiders(scrapy.Spider):
             # Keep track of duplicate books
             if (book, category) in self.links:
                 self.num_duplicates += 1
-                if self.num_duplicates % 25 == 0:
+                if self.num_duplicates % 100 == 0:
                     print(f"[COUNT] Processed {self.num_duplicates} duplicates.")
                 continue
             else:

@@ -74,7 +74,7 @@ class ExcelWriterPipeline:
             category_dict[primary_key] = book_data
             self.num_books += 1
             #print("Book added to category", item["category"])
-            if self.num_books % 50 == 0:
+            if self.num_books % 200 == 0:
                 print(f"Processed {self.num_books} books, counts of each category: {[(k, len(v)) for k, v in self.results.items()]}")
         
     def create_book_dict(self, book_item):
