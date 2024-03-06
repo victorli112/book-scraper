@@ -25,8 +25,8 @@ class spiders(scrapy.Spider):
         "handle_httpstatus_list": [404, 500],
     }
     dont_parse_third_party = ["bajalibros", "play", "goto", "amazon", "audible"]
-    links = set()
-    num_duplicates = 0
+    #links = set()
+    #num_duplicates = 0
     
     def parse(self, response):
         # we might still be getting a response from 500 errors
@@ -42,15 +42,15 @@ class spiders(scrapy.Spider):
         all_books = response.css('p.productTitle a::attr(href)').getall()
         for book in all_books:
             
-            # Keep track of duplicate books
-            if (book, category) in self.links:
-                self.num_duplicates += 1
-                if self.num_duplicates % 100 == 0:
-                    print(f"[COUNT] Processed {self.num_duplicates} duplicates.")
-                continue
-            else:
-                self.links.add((book, category))
-                yield scrapy.Request(book, callback=self.parse_book, meta={'category': category}, dont_filter=True)
+            #| Keep track of duplicate books
+            #if (book, category) in self.links:
+            #    self.num_duplicates += 1
+            #    if self.num_duplicates % 100 == 0:
+            #        print(f"[COUNT] Processed {self.num_duplicates} duplicates.")
+            #    continue
+            #else:
+            #    self.links.add((book, category))
+            yield scrapy.Request(book, callback=self.parse_book, meta={'category': category}, dont_filter=True)
         
         # Go to next page if it exists and there are books on this page
         if "pageno" in response.request.url:
