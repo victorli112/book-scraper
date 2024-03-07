@@ -9,15 +9,17 @@ from prh.spiders.third_party_helper import ThirdPartyHelper
 class spiders(scrapy.Spider):
     name = "prh-scraper"
     handle_httpstatus_list = [404, 500]
-    start_urls = ["https://www.penguinlibros.com/ar/40915-aventuras",
-                 "https://www.penguinlibros.com/ar/40919-fantasia",
-                 "https://www.penguinlibros.com/ar/40925-literatura-contemporanea",
-                 "https://www.penguinlibros.com/ar/40929-novela-negra-misterio-y-thriller",
-                 "https://www.penguinlibros.com/ar/40933-poesia",
-                 "https://www.penguinlibros.com/ar/40917-ciencia-ficcion",
-                 "https://www.penguinlibros.com/ar/40923-grandes-clasicos",
-                 "https://www.penguinlibros.com/ar/40927-novela-historica",
-                 "https://www.penguinlibros.com/ar/40931-novela-romantica"]
+    # start_urls = ["https://www.penguinlibros.com/ar/40915-aventuras",
+    #              "https://www.penguinlibros.com/ar/40919-fantasia",
+    #              "https://www.penguinlibros.com/ar/40925-literatura-contemporanea",
+    #              "https://www.penguinlibros.com/ar/40929-novela-negra-misterio-y-thriller",
+    #              "https://www.penguinlibros.com/ar/40933-poesia",
+    #              "https://www.penguinlibros.com/ar/40917-ciencia-ficcion",
+    #              "https://www.penguinlibros.com/ar/40923-grandes-clasicos",
+    #              "https://www.penguinlibros.com/ar/40927-novela-historica",
+    #              "https://www.penguinlibros.com/ar/40931-novela-romantica"]
+    
+    start_urls = ["https://www.penguinlibros.com/ar/tematicas/294744-libro-no-basto-con-querer-9789877352863"]
     
     RETRY_HTTP_CODES = [502, 503, 504, 522, 524, 408, 429, 400]
     custom_settings = {
@@ -25,8 +27,8 @@ class spiders(scrapy.Spider):
         "handle_httpstatus_list": [404, 500],
     }
     dont_parse_third_party = ["bajalibros", "play", "goto", "amazon", "audible"]
-    #links = set()
-    #num_duplicates = 0
+    links = set()
+    num_duplicates = 0
     
     def parse(self, response):
         # we might still be getting a response from 500 errors
@@ -42,14 +44,15 @@ class spiders(scrapy.Spider):
         all_books = response.css('p.productTitle a::attr(href)').getall()
         for book in all_books:
             
-            #| Keep track of duplicate books
-            #if (book, category) in self.links:
-            #    self.num_duplicates += 1
-            #    if self.num_duplicates % 100 == 0:
-            #        print(f"[COUNT] Processed {self.num_duplicates} duplicates.")
-            #    continue
-            #else:
-            #    self.links.add((book, category))
+            # Keep track of duplicate books
+            if (book, category) in self.links:
+               self.num_duplicates += 1
+               if self.num_duplicates % 100 == 0:
+                   print(f"[COUNT] Processed {self.num_duplicates} duplicates.")
+               continue
+            else:
+               self.links.add((book, category))
+               
             yield scrapy.Request(book, callback=self.parse_book, meta={'category': category}, dont_filter=True)
         
         # Go to next page if it exists and there are books on this page
@@ -72,17 +75,16 @@ class spiders(scrapy.Spider):
         # Get basic information
         try:
             helper.populate_prh_basic_info(book_soup)
-        except:
-            print("Can't parse basic info", response.url, response.status)
-            
-        # Get detailed info
-        try:
             helper.populate_prh_detailed_info(book_soup)
         except:
-            print("Can't parse detailed info", response.url, response.status)
+            print("Can't parse prh info", response.url, response.status)
+            # if response.status in [404, 500]:
+            #     print("Retrying request", response.request.url)
+            #     yield scrapy.Request(response.request.url, callback=self.parse_book, dont_filter=True)
+            #     return
         
         # Populate scrapy item
-        item = SBook(category=response.meta['category'],
+        item = SBook(category="poesia",
                      title=helper.title, 
                      author=helper.author, 
                      price=helper.price, 
