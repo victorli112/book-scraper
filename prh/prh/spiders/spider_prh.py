@@ -83,7 +83,7 @@ class spiders(scrapy.Spider):
             #     return
         
         # Populate scrapy item
-        item = SBook(category="poesia",
+        item = SBook(category=response.meta["category"],
                      title=helper.title, 
                      author=helper.author, 
                      price=helper.price, 
