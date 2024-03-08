@@ -11,7 +11,7 @@ class spiders(scrapy.Spider):
     handle_httpstatus_list = [404, 500]
     start_urls = ["https://www.penguinlibros.com/ar/40915-aventuras",
                  "https://www.penguinlibros.com/ar/40919-fantasia",
-                 "https://www.penguinlibros.com/ar/40925-literatura-contemporanea",
+                #"https://www.penguinlibros.com/ar/40925-literatura-contemporanea",
                  "https://www.penguinlibros.com/ar/40929-novela-negra-misterio-y-thriller",
                  "https://www.penguinlibros.com/ar/40933-poesia",
                  "https://www.penguinlibros.com/ar/40917-ciencia-ficcion",
@@ -77,10 +77,13 @@ class spiders(scrapy.Spider):
             helper.populate_prh_detailed_info(book_soup)
         except:
             print("Can't parse prh info", response.url, response.status)
-            # if response.status in [404, 500]:
-            #     print("Retrying request", response.request.url)
-            #     yield scrapy.Request(response.request.url, callback=self.parse_book, dont_filter=True)
-            #     return
+            if response.status in [404, 500]:
+                print("Retrying request", response.request.url)
+                yield scrapy.Request(response.request.url, 
+                                     callback=self.parse_book, 
+                                     dont_filter=True, 
+                                     meta={'category': response.meta['category']})
+                return
         
         # Populate scrapy item
         item = SBook(category=response.meta["category"],
