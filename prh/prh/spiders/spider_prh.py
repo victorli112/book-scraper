@@ -57,14 +57,18 @@ class spiders(scrapy.Spider):
         # Go to next page if it exists and there are books on this page
         if "pageno" in response.request.url:
             next_page = response.request.url.split("&pageno=")[0] + "&pageno=" + str(int(response.request.url.split("&pageno=")[1]) + 1)
+            page = int(response.request.url.split("&pageno=")[1]) + 1
         else:
             next_page = response.request.url + "?&pageno=2"
-        if next_page and len(all_books) > 0:
-            yield scrapy.Request(next_page, callback=self.parse)
+            page = 2
+        if next_page and len(all_books) > 0 and page:
+            #batching
+            if page <= 49:
+                yield scrapy.Request(next_page, callback=self.parse)
             
     def parse_book(self, response):
         if response.status == 500 or response.status == 404:
-            print("//////////////////// 500 ERROR PARSE BOOK ///////////////////////////////", response.url)
+            print(f"//////////////////// {response.status} ERROR PARSE BOOK /////////////////////////////// {response.url}")
             
         book_soup = BeautifulSoup(response.body, 'lxml')
     
