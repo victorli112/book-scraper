@@ -11,7 +11,7 @@ class spiders(scrapy.Spider):
     handle_httpstatus_list = [404, 500]
     start_urls = [#"https://www.penguinlibros.com/ar/40915-aventuras",
                  #"https://www.penguinlibros.com/ar/40919-fantasia",
-                 "https://www.penguinlibros.com/ar/40925-literatura-contemporanea",]
+                 "https://www.penguinlibros.com/ar/40925-literatura-contemporanea&pageno=50",]
                  #"https://www.penguinlibros.com/ar/40929-novela-negra-misterio-y-thriller",
                  #"https://www.penguinlibros.com/ar/40933-poesia",
                  #"https://www.penguinlibros.com/ar/40917-ciencia-ficcion",
@@ -63,7 +63,8 @@ class spiders(scrapy.Spider):
             page = 2
         if next_page and len(all_books) > 0 and page:
             #batching
-            if page <= 49:
+            if page > 49:
+                print(f'On page {page}')
                 yield scrapy.Request(next_page, callback=self.parse)
             
     def parse_book(self, response):
