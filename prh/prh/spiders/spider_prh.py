@@ -11,7 +11,7 @@ class spiders(scrapy.Spider):
     handle_httpstatus_list = [404, 500]
     start_urls = [#"https://www.penguinlibros.com/ar/40915-aventuras",
                  #"https://www.penguinlibros.com/ar/40919-fantasia",
-                 "https://www.penguinlibros.com/ar/40925-literatura-contemporanea&pageno=50",]
+                 "https://www.penguinlibros.com/ar/40925-literatura-contemporanea?pageno=50",]
                  #"https://www.penguinlibros.com/ar/40929-novela-negra-misterio-y-thriller",
                  #"https://www.penguinlibros.com/ar/40933-poesia",
                  #"https://www.penguinlibros.com/ar/40917-ciencia-ficcion",
@@ -56,10 +56,10 @@ class spiders(scrapy.Spider):
         
         # Go to next page if it exists and there are books on this page
         if "pageno" in response.request.url:
-            next_page = response.request.url.split("&pageno=")[0] + "&pageno=" + str(int(response.request.url.split("&pageno=")[1]) + 1)
-            page = int(response.request.url.split("&pageno=")[1]) + 1
+            next_page = response.request.url.split("pageno=")[0] + "pageno=" + str(int(response.request.url.split("pageno=")[1]) + 1)
+            page = int(response.request.url.split("pageno=")[1]) + 1
         else:
-            next_page = response.request.url + "?&pageno=2"
+            next_page = response.request.url + "pageno=2"
             page = 2
         if next_page and len(all_books) > 0 and page:
             #batching
