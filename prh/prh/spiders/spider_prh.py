@@ -9,15 +9,15 @@ from prh.spiders.third_party_helper import ThirdPartyHelper
 class spiders(scrapy.Spider):
     name = "prh-scraper"
     handle_httpstatus_list = [404, 500]
-    start_urls = ["https://www.penguinlibros.com/ar/40915-aventuras",
-                 "https://www.penguinlibros.com/ar/40919-fantasia",
-                #"https://www.penguinlibros.com/ar/40925-literatura-contemporanea",
-                 "https://www.penguinlibros.com/ar/40929-novela-negra-misterio-y-thriller",
-                 "https://www.penguinlibros.com/ar/40933-poesia",
-                 "https://www.penguinlibros.com/ar/40917-ciencia-ficcion",
-                 "https://www.penguinlibros.com/ar/40923-grandes-clasicos",
-                 "https://www.penguinlibros.com/ar/40927-novela-historica",
-                 "https://www.penguinlibros.com/ar/40931-novela-romantica"]
+    start_urls = [#"https://www.penguinlibros.com/ar/40915-aventuras",
+                 #"https://www.penguinlibros.com/ar/40919-fantasia",
+                 "https://www.penguinlibros.com/ar/40925-literatura-contemporanea",]
+                 #"https://www.penguinlibros.com/ar/40929-novela-negra-misterio-y-thriller",
+                 #"https://www.penguinlibros.com/ar/40933-poesia",
+                 #"https://www.penguinlibros.com/ar/40917-ciencia-ficcion",
+                 #"https://www.penguinlibros.com/ar/40923-grandes-clasicos",
+                 #"https://www.penguinlibros.com/ar/40927-novela-historica",
+                 #"https://www.penguinlibros.com/ar/40931-novela-romantica"]
     
     
     RETRY_HTTP_CODES = [502, 503, 504, 522, 524, 408, 429, 400]
