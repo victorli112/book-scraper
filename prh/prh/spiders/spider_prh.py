@@ -27,6 +27,7 @@ class spiders(scrapy.Spider):
     }
     dont_parse_third_party = ["bajalibros", "play", "goto", "amazon", "audible"]
     links = set()
+    tracking_third_party_links = set()
     num_duplicates = 0
     
     def parse(self, response):
@@ -114,7 +115,11 @@ class spiders(scrapy.Spider):
         for link in response.css('div.bloque_external_link a::attr(href)').getall():
             if any(x in link for x in self.dont_parse_third_party):
                 continue
-            yield scrapy.Request(link, callback=self.parse_third_party, meta={'item': item, 'url': link, 'bookTitle':helper.title})
+            if (link, response.meta['category'], helper.title, helper.author) in self.tracking_third_party_links:
+                continue
+            else:
+                self.tracking_third_party_links.add((link, response.meta['category'], helper.title, helper.author))
+                yield scrapy.Request(link, callback=self.parse_third_party, dont_filter=True, meta={'item': item, 'url': link, 'bookTitle':helper.title})
         
     def parse_third_party(self, response):
         price = ThirdPartyHelper()

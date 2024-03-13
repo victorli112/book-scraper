@@ -9,11 +9,11 @@ from planeta.spiders.third_party_helper import ThirdPartyHelper
 class spiders(scrapy.Spider):
     name = "planeta-scraper"
     handle_httpstatus_list = [404, 500]
-    start_urls = ["https://www.planetadelibros.com.ar/libros/novelas/00038/p/1?q=30"
+    start_urls = [#"https://www.planetadelibros.com.ar/libros/novelas/00038/p/1?q=30"
                   "https://www.planetadelibros.com.ar/libros/novela-historica/00013/p/1?q=30",
-                  "https://www.planetadelibros.com.ar/libros/novela-literaria/00012/p/1?q=30",
+                  #"https://www.planetadelibros.com.ar/libros/novela-literaria/00012/p/1?q=30",
                   "https://www.planetadelibros.com.ar/libros/novela-negra/00015/p/1?q=30",
-                  "https://www.planetadelibros.com.ar/libros/novelas-romanticas/00014/p/1?q=30",
+                  #"https://www.planetadelibros.com.ar/libros/novelas-romanticas/00014/p/1?q=30",
                   "https://www.planetadelibros.com.ar/libros/poesia/00051/p/1?q=30",
                   "https://www.planetadelibros.com.ar/libros/teatro/00052/p/1?q=30"]
     
