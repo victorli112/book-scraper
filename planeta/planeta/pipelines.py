@@ -40,6 +40,9 @@ class ExcelWriterPipeline:
 
             row = 1
             for book in books.values():
+                # if there is no price, we don't want to include it
+                if not book['Price']:
+                    continue
                 for _key,_value in book.items():
                     col = ordered_columns.index(_key)
                     ws.write(row, col, _value)
