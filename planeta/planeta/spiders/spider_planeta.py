@@ -44,7 +44,6 @@ class spiders(scrapy.Spider):
         all_books_data_sites = [self.AJAX_URL + book_id for book_id in all_book_ids]
 
         for book_site in all_books_data_sites:
-            print(book_site, category)
             # Keep track of duplicate books
             if (book_site, category) in self.links:
                self.num_duplicates += 1
@@ -55,20 +54,13 @@ class spiders(scrapy.Spider):
                self.links.add((book_site, category))
                
             yield scrapy.Request(book_site, callback=self.parse_book_links, meta={'category': category}, dont_filter=True)
-            break
-        return
-        # TODO VVV
+
         # Go to next page if it exists and there are books on this page
-        if "pageno" in response.request.url:
-            next_page = response.request.url.split("pageno=")[0] + "pageno=" + str(int(response.request.url.split("pageno=")[1]) + 1)
-            #page = int(response.request.url.split("pageno=")[1]) + 1
-        else:
-            next_page = response.request.url + "?pageno=2"
-            #page = 2
-        if next_page and len(all_books) > 0:
-            #batching
-            #if page > 49:
-            #    print(f'On page {page}')
+        if "/p/" in response.request.url:
+            next_page = response.request.url.split("/p/")[0] + "/p/" + str(int(response.request.url.split("/p/")[1].split("?")[0]) + 1) + "?q=30"
+        else: # first page
+            next_page = response.request.url.split("?")[0] + "/p/2?q=30"
+        if next_page and len(all_books_data_sites) > 0:
             yield scrapy.Request(next_page, callback=self.parse)
             
     def parse_book_links(self, response):
@@ -87,7 +79,6 @@ class spiders(scrapy.Spider):
         try:
             title = book_soup.find("div", class_="titol").text.strip()
             author = book_soup.find("div", class_="autor").text.strip()
-            price = book_soup.find("div", class_="preu").text.strip().replace(" ", "")
         except:
             print("++[ERROR]++ Cant get author or title", response.url)
             return 
