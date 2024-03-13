@@ -59,7 +59,7 @@ class spiders(scrapy.Spider):
             next_page = response.request.url.split("pageno=")[0] + "pageno=" + str(int(response.request.url.split("pageno=")[1]) + 1)
             page = int(response.request.url.split("pageno=")[1]) + 1
         else:
-            next_page = response.request.url + "pageno=2"
+            next_page = response.request.url + "?pageno=2"
             page = 2
         if next_page and len(all_books) > 0 and page:
             #batching
