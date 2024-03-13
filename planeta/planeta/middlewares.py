@@ -4,10 +4,10 @@
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
 from scrapy import signals
-
+import cloudscraper
+from scrapy.http import HtmlResponse
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
-
 
 class PlanetaSpiderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
@@ -57,6 +57,7 @@ class PlanetaSpiderMiddleware:
 
 
 class PlanetaDownloaderMiddleware:
+    cloudflare_scraper = cloudscraper.create_scraper()
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the downloader middleware does not modify the
     # passed objects.
@@ -81,13 +82,14 @@ class PlanetaDownloaderMiddleware:
         return None
 
     def process_response(self, request, response, spider):
-        # Called with the response returned from the downloader.
-
-        # Must either;
-        # - return a Response object
-        # - return a Request object
-        # - or raise IgnoreRequest
-        return response
+        request_url = request.url
+        response_status = response.status
+        if response_status not in (403, 503):
+            return response
+        
+        cflare_response = self.cloudflare_scraper.get(request_url)
+        cflare_res_transformed = HtmlResponse(url = request_url, body=cflare_response.text, encoding='utf-8')
+        return cflare_res_transformed
 
     def process_exception(self, request, exception, spider):
         # Called when a download handler or a process_request()

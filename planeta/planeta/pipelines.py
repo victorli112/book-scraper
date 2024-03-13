@@ -9,38 +9,27 @@ from xlsxwriter import Workbook
 
 from planeta.items import SBook
 
-THIRD_PARTY_PRH = ['Librenta', 'Buscalibre', 'Tematika', 'SBS_Liberia', 'Libreria_Hernandez', 'Cuspide', 'Tras_los_Pasos']
+THIRD_PARTY_PLANETA = ['Tematika', 'Cuspide', 'SBS_Liberia', 'Tras_los_Pasos', 'Libros_de_la_Arena', 'Libreria_Palito', 'Libreria_Santa_Fe']
 class ExcelWriterPipeline:
     def open_spider(self, spider):
         self.row = 1
         self.results = {
-            'aventuras': {},
-            'fantasia': {},
-            'literatura_contemporanea': {},
-            'novela_misterio_y_thriller': {},
-            'poesia': {},
-            'ciencia_ficcion': {},
-            'grandes_clasicos': {},
+            'novela_contemporanea': {},
             'novela_historica': {},
-            'novela_romantica': {}
+            'novela_literaria': {},
+            'novela_negra': {},
+            'novelas_romanticas': {},
+            'poesia': {},
+            'teatro': {}
         }
         self.num_books = 0
         
     def close_spider(self, spider):
-        # Clean the data
-        # {title : {Title: x, Author: y}, title2: {Title: x, Author: y}}
-        # for title, info in self.results.items():
-        #     for key, value in info.items():
-        #         if not value and key.startswith('discount'):
-        #             self.results[title][key] = '0%'
-        #         elif not value and key.startswith('price'):
-        #             self.results[title][key] = '-1'
-        
         # TO EXCEL 
         print(f"FINAL Processed {self.num_books} books, counts of each category: {[(k, len(v)) for k, v in self.results.items()]}")
         
-        ordered_columns = ['Title', 'Author', 'Price', 'Fecha de Publicacion', 'Idoma', 'ISBN', 'Formato', 'Presentacion']
-        wb = Workbook("penguin_random_house_books.xlsx")
+        ordered_columns = ['Title', 'Author', 'Price', 'Fecha Publicacion', 'Idoma', 'ISBN', 'Formato', 'Presentacion', 'price_in_Tematika', 'discount_Tematika', 'price_in_Cuspide', 'discount_Cuspide', 'price_in_SBS_Liberia', 'discount_SBS_Liberia', 'price_in_Tras_los_Pasos', 'discount_Tras_los_Pasos', 'price_in_Libros_de_la_Arena', 'discount_Libros_de_la_Arena', 'price_in_Libreria_Palito', 'discount_Libreria_Palito', 'price_in_Libreria_Santa_Fe', 'discount_Libreria_Santa_Fe']
+        wb = Workbook("planeta_de_libros_books.xlsx")
 
         for category, books in self.results.items():
             ws = wb.add_worksheet(category)
@@ -65,7 +54,7 @@ class ExcelWriterPipeline:
     
     def handle_book(self, item, spider):
         category_dict = self.results[item["category"]]
-        primary_key = (item["title"], item["author"], item["category"], item["price"])
+        primary_key = (item["title"], item["author"], item["category"])
                 
         book_data = self.create_book_dict(item)
         if primary_key in category_dict:
@@ -73,7 +62,6 @@ class ExcelWriterPipeline:
         else:
             category_dict[primary_key] = book_data
             self.num_books += 1
-            #print("Book added to category", item["category"])
             if self.num_books % 200 == 0:
                 print(f"Processed {self.num_books} books, counts of each category: {[(k, len(v)) for k, v in self.results.items()]}")
         
@@ -82,7 +70,7 @@ class ExcelWriterPipeline:
             'Title': book_item['title'], 
             'Author': book_item['author'], 
             'Price': book_item['price'], 
-            'Fecha de Publicacion': book_item['fecha_de_publicacion'],
+            'Fecha Publicacion': book_item['fecha_publicacion'],
             'Idoma': book_item['idoma'],
             'ISBN': book_item['ISBN'],
             'Formato': book_item['formato'],
@@ -95,7 +83,7 @@ class ExcelWriterPipeline:
                 book_dict[f'price_in_{price_item["name"].replace(" ", "_")}'] = price_item['price']
                 book_dict[f'discount_{price_item["name"].replace(" ", "_")}'] = price_item['discount']
                 all_collected_names.append(price_item['name']) 
-            not_collected = list(set(THIRD_PARTY_PRH) - set(all_collected_names))
+            not_collected = list(set(THIRD_PARTY_PLANETA) - set(all_collected_names))
             for name in not_collected:
                 book_dict[f'price_in_{name.replace(" ", "_")}'] = None
                 book_dict[f'discount_{name.replace(" ", "_")}'] = None

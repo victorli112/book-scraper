@@ -32,6 +32,16 @@ class ThirdPartyHelper:
         elif site_name == "traslospasos":
             self.name = "Tras_los_Pasos"
             self.get_traslospasos_price(soup)
+        # keeping old third party sites in case, but adding new ones specific to planeta below
+        elif site_name == "librosdelaarena":
+            self.name = "Libros_de_la_Arena"
+            self.get_librosdelaarena_price(soup)
+        elif site_name == "libreriapalito":
+            self.name = "Libreria_Palito"
+            self.get_libreria_palito_price(soup)
+        elif site_name == "lsf":
+            self.name = "Libreria_Santa_Fe"
+            self.get_libreria_santa_fe_price(soup)
         else:
             raise Exception("Third party site not handled", book_title, site_name, url) 
         
@@ -129,6 +139,60 @@ class ThirdPartyHelper:
         if price:
             self.price = price.find('span', class_='item-price').text.strip()
     
+    def get_librosdelaarena_price(self, soup):
+        # There seems to always be a discount??
+        price_box = soup.find('div', class_='product-info-price')
+        if price_box:
+            current_price = price_box.find('span', class_='special-price')
+            if current_price and current_price.find('span', class_='price'):
+                self.price = current_price.find('span', class_='price').text.strip()
+            
+            old_price = price_box.find('span', class_='old-price')
+            if old_price and old_price.find('span', class_='price'):
+                old_price = old_price.find('span', class_='price').text.strip()
+                old_price_float = float(old_price.replace('$', '').replace('.', '').split(',')[0])
+                if self.price:
+                    curr_price_float = float(self.price.replace('$', '').replace('.', '').split(',')[0])
+                    discount = 1 - (curr_price_float / old_price_float)
+                    self.discount = str(round(discount * 100)).strip() + "%"
+                else:
+                    raise Exception("Discount but no price")
+    
+    def get_libreria_palito_price(self, soup):
+        # Get price 
+        product_info_box = soup.find('div', class_='product-info-price')
+        
+        # If there is a special price, there is a discount 
+        if product_info_box:
+            # If there is a special price, there is a discount
+            special_price_box = product_info_box.find('span', class_='special-price')
+            if special_price_box and special_price_box.find('span', class_='price'):
+                self.price = special_price_box.find('span', class_='price').text.strip()
+                
+                # Find the old price
+                old_price_box = product_info_box.find('span', class_='old-price')
+                if old_price_box and old_price_box.find('span', class_='price'):
+                    old_price = old_price_box.find('span', class_='price').text.strip()
+                    
+                    # Calculate the discount
+                    old_price_float = float(old_price.replace('$', '').replace('.', '').split(',')[0])
+                    curr_price_float = float(self.price.replace('$', '').replace('.', '').split(',')[0])
+                    discount = 1 - (curr_price_float / old_price_float)
+                    self.discount = str(round(discount * 100)).strip() + "%"
+                
+            # No special price, we just find the final price
+            elif product_info_box.find('span', class_='price-final_price'):
+                price = product_info_box.find('span', class_='price-final_price').find('span', class_='price')
+                if price:
+                    self.price = price.text.strip()
+    
+    def get_libreria_santa_fe_price(self, soup):
+        # Get price 
+        price = soup.find('span', class_='moneda')
+        if price:
+            self.price = "$" + price.text.strip()
+        
+        
     def __str__(self):
         return f'name={self.name}, price={self.price}, discount={self.discount}'
     
