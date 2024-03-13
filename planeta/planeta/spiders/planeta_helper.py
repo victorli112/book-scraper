@@ -11,7 +11,14 @@ class PlanetaHelper:
         self.presentacion = None
         
     def populate_planeta_basic_info(self, book_soup, title):
-        self.title = book_soup.find('div', class_="product-bottom").find('h1').text.strip()
+        title_block = book_soup.find('div', class_="product-bottom")
+        if title_block:
+            self.title = book_soup.find('div', class_="product-bottom").find('h1').text.strip()
+        elif title:
+            self.title = title
+        else:
+            raise Exception("No information for book")
+        
         self.price = unidecode.unidecode(book_soup.find('span', class_='price-item--regular').text.strip()).replace(' ','')
 
         # assert the titles are the same 

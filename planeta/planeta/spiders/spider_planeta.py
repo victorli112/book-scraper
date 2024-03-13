@@ -110,7 +110,12 @@ class spiders(scrapy.Spider):
         
         if response.meta["siteName"] == "Mercadolibre": # Main site with book details
             planeta_helper = PlanetaHelper()
-            planeta_helper.populate_planeta_basic_info(soup, response.meta['bookTitle'])
+            try:
+                planeta_helper.populate_planeta_basic_info(soup, response.meta['bookTitle'])
+            except:
+                # No book found
+                return
+            
             book_item['price'] = planeta_helper.price
             book_item['fecha_publicacion'] = planeta_helper.fecha_publicacion
             book_item['idoma'] = planeta_helper.idoma
