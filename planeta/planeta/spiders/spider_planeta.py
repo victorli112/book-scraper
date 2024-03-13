@@ -56,11 +56,8 @@ class spiders(scrapy.Spider):
             yield scrapy.Request(book_site, callback=self.parse_book_links, meta={'category': category}, dont_filter=True)
 
         # Go to next page if it exists and there are books on this page
-        if "/p/" in response.request.url:
-            next_page = response.request.url.split("/p/")[0] + "/p/" + str(int(response.request.url.split("/p/")[1].split("?")[0]) + 1) + "?q=30"
-        else: # first page
-            next_page = response.request.url.split("?")[0] + "/p/2?q=30"
-        if next_page and len(all_books_data_sites) > 0:
+        next_page = response.css('div.paginacio-seguent a::attr(href)').get()
+        if next_page:
             yield scrapy.Request(next_page, callback=self.parse)
             
     def parse_book_links(self, response):
