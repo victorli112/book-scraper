@@ -9,15 +9,15 @@ from prh.spiders.third_party_helper import ThirdPartyHelper
 class spiders(scrapy.Spider):
     name = "prh-scraper"
     handle_httpstatus_list = [404, 500]
-    start_urls = [#"https://www.penguinlibros.com/ar/40915-aventuras",
-                 #"https://www.penguinlibros.com/ar/40919-fantasia",
-                 "https://www.penguinlibros.com/ar/40925-literatura-contemporanea?pageno=50",]
-                 #"https://www.penguinlibros.com/ar/40929-novela-negra-misterio-y-thriller",
-                 #"https://www.penguinlibros.com/ar/40933-poesia",
-                 #"https://www.penguinlibros.com/ar/40917-ciencia-ficcion",
-                 #"https://www.penguinlibros.com/ar/40923-grandes-clasicos",
-                 #"https://www.penguinlibros.com/ar/40927-novela-historica",
-                 #"https://www.penguinlibros.com/ar/40931-novela-romantica"]
+    start_urls = ["https://www.penguinlibros.com/ar/40915-aventuras",
+                 "https://www.penguinlibros.com/ar/40919-fantasia",
+                 #"https://www.penguinlibros.com/ar/40925-literatura-contemporanea?pageno=50",]
+                 "https://www.penguinlibros.com/ar/40929-novela-negra-misterio-y-thriller",
+                 "https://www.penguinlibros.com/ar/40933-poesia",
+                 "https://www.penguinlibros.com/ar/40917-ciencia-ficcion",
+                 "https://www.penguinlibros.com/ar/40923-grandes-clasicos",
+                 "https://www.penguinlibros.com/ar/40927-novela-historica",
+                 "https://www.penguinlibros.com/ar/40931-novela-romantica"]
     
     
     RETRY_HTTP_CODES = [502, 503, 504, 522, 524, 408, 429, 400]
@@ -57,15 +57,15 @@ class spiders(scrapy.Spider):
         # Go to next page if it exists and there are books on this page
         if "pageno" in response.request.url:
             next_page = response.request.url.split("pageno=")[0] + "pageno=" + str(int(response.request.url.split("pageno=")[1]) + 1)
-            page = int(response.request.url.split("pageno=")[1]) + 1
+            #page = int(response.request.url.split("pageno=")[1]) + 1
         else:
-            next_page = response.request.url + "pageno=2"
-            page = 2
-        if next_page and len(all_books) > 0 and page:
+            next_page = response.request.url + "?pageno=2"
+            #page = 2
+        if next_page and len(all_books) > 0:
             #batching
-            if page > 49:
-                print(f'On page {page}')
-                yield scrapy.Request(next_page, callback=self.parse)
+            #if page > 49:
+            #    print(f'On page {page}')
+            yield scrapy.Request(next_page, callback=self.parse)
             
     def parse_book(self, response):
         if response.status == 500 or response.status == 404:
