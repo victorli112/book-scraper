@@ -24,7 +24,7 @@ class spiders(scrapy.Spider):
         "RETRY_HTTP_CODES": [502, 503, 504, 522, 524, 408, 429, 400],
         "handle_httpstatus_list": [404, 500],
     }
-    dont_parse_third_party = ["bajalibros", "play", "goto", "amazon", "audible", "casassaylorenzo", "books", "itunes", "casadellibro", "storytel"]
+    dont_parse_third_party = ["bajalibros", "play", "goto", "amazon", "audible", "casassaylorenzo", "books", "itunes", "casadellibro", "storytel", "es"]
     links = set()
     tracking_third_party_links = set()
     num_duplicates = 0
