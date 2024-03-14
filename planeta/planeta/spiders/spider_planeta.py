@@ -24,7 +24,7 @@ class spiders(scrapy.Spider):
         "RETRY_HTTP_CODES": [502, 503, 504, 522, 524, 408, 429, 400],
         "handle_httpstatus_list": [404, 500],
     }
-    dont_parse_third_party = ["bajalibros", "play", "goto", "amazon", "audible", "casassaylorenzo", "books", "itunes", "casadellibro", "storytel", "es", "tienda"]
+    dont_parse_third_party = ["bajalibros", "play", "goto", "amazon", "audible", "casassaylorenzo", "books", "itunes", "casadellibro", "storytel", "es"]
     links = set()
     tracking_third_party_links = set()
     num_duplicates = 0
@@ -39,69 +39,27 @@ class spiders(scrapy.Spider):
         if category == "novelas":
             category = "novela_contemporanea"
         
-        soup = BeautifulSoup(response.body, 'lxml')
-        
         # Get all book ids on the page
-        book_info = soup.find('div', class_='resultat-cercador')
-        if not book_info:
-            print("No results", response.request.url)
-            return 
-        
-        # find all <li> elements in book info
-        books = book_info.find_all('li')
-        
-        for book in books:
-            # link to main site for the book
-            basic_information_link = book.find('a')['href']
-            planeta_helper = PlanetaHelper()
-            try:
-                planeta_helper.populate_planeta_basic_info(basic_information_link)
-            except Exception as e:
-                # No book found
-                print("Failed to populate", response.request.url, basic_information_link, e)
-                continue
-            
-            # Create empty scrapy item to hold information
-            item = SBook(
-                category=category,
-                title=planeta_helper.title,
-                author=planeta_helper.author,
-                price=planeta_helper.price,
-                fecha_publicacion=planeta_helper.fecha_publicacion,
-                idoma=planeta_helper.idoma,
-                ISBN=planeta_helper.ISBN,
-                formato=planeta_helper.formato,
-                presentacion=planeta_helper.presentacion,
-                third_party_prices=[]
-            )
-                        
-            # the numerical id component
-            book_id = book.find('div', class_='comprar')
-            if book_id and book_id.find('span')['data-book-id']:
-                
-                # get the numerical id
-                book_id = book_id.find('span')['data-book-id']
-                book_site = self.AJAX_URL + book_id
-                print("Added book", item['title'], "Thirdparty Site:", book_site)
-
-
-                # Keep track of duplicate books
-                if (book_site, book_id, category) in self.links:
-                    self.num_duplicates += 1
-                    if self.num_duplicates % 10 == 0:
-                        print(f"[COUNT] Processed {self.num_duplicates} duplicates.")
-                        continue
-                else:
-                    self.links.add((book_site, book_id, category))
-                    yield scrapy.Request(book_site, callback=self.parse_third_party_page, meta={'category': category, 'item': item}, dont_filter=True)
+        all_book_ids = response.css('div.comprar span::attr(data-book-id)').getall()
+        all_books_data_sites = [self.AJAX_URL + book_id for book_id in all_book_ids]
+        for book_site in all_books_data_sites:
+            # Keep track of duplicate books
+            if (book_site, category) in self.links:
+               self.num_duplicates += 1
+               if self.num_duplicates % 10 == 0:
+                   print(f"[COUNT] Processed {self.num_duplicates} duplicates.")
+               continue
+            else:
+               self.links.add((book_site, category))
+               
+            yield scrapy.Request(book_site, callback=self.parse_book_links, meta={'category': category}, dont_filter=True)
 
         # Go to next page if it exists and there are books on this page
         next_page = response.css('div.paginacio-seguent a::attr(href)').get()
         if next_page:
-            print(f"Next page: {next_page}")
             yield scrapy.Request(next_page, callback=self.parse)
             
-    def parse_third_party_page(self, response):
+    def parse_book_links(self, response):
         if response.status == 500 or response.status == 404:
             print(f"//////////////////// {response.status} ERROR PARSE BOOK /////////////////////////////// {response.url}")
             
@@ -114,17 +72,36 @@ class spiders(scrapy.Spider):
         for link in book_soup.find_all('a', class_='boto-comprar'):
             third_party_links[link['data-botiga']] = link['href']
         
-        item = response.meta['item']
+        try:
+            title = book_soup.find("div", class_="titol").text.strip()
+            author = book_soup.find("div", class_="autor").text.strip()
+        except:
+            print("++[ERROR]++ Cant get author or title", response.url)
+            return 
+        
+        # Create empty scrapy item to hold information
+        item = SBook(
+            category=response.meta["category"],
+            title=title,
+            author=author,
+            price=None,
+            fecha_publicacion=None,
+            idoma=None,
+            ISBN=None,
+            formato=None,
+            presentacion=None,
+            third_party_prices=[]
+        )
         
         # Iterate through all third party links
         for site_name, link in third_party_links.items():
             if any(x in link for x in self.dont_parse_third_party):
                 continue
-            elif (link, response.meta['category'], item['title'], item['author']) in self.tracking_third_party_links:
+            elif (link, response.meta['category'], title, author) in self.tracking_third_party_links:
                 continue
             else:
-                self.tracking_third_party_links.add((link, response.meta['category'], item['title'], item['author']))
-                yield scrapy.Request(link, callback=self.parse_third_party, dont_filter=True, meta={'item': item, 'url': link, 'siteName': site_name, 'parent_link': response.request.url, 'bookTitle':item['title']})
+                self.tracking_third_party_links.add((link, response.meta['category'], title, author))
+                yield scrapy.Request(link, callback=self.parse_third_party, dont_filter=True, meta={'item': item, 'url': link, 'siteName': site_name, 'bookTitle':item['title']})
 
     def parse_third_party(self, response):
         soup = BeautifulSoup(response.body, 'lxml')
@@ -136,6 +113,7 @@ class spiders(scrapy.Spider):
                 planeta_helper.populate_planeta_basic_info(soup, response.meta['bookTitle'])
             except:
                 # No book found
+                print("Failed to populate", response.meta['bookTitle'], response.meta['url'])
                 return
             
             book_item['price'] = planeta_helper.price
