@@ -10,11 +10,11 @@ class spiders(scrapy.Spider):
     name = "planeta-scraper"
     handle_httpstatus_list = [404, 500]
     start_urls = [#"https://www.planetadelibros.com.ar/libros/novelas/00038/p/1?q=30"
-                  "https://www.planetadelibros.com.ar/libros/novela-historica/00013/p/1?q=30",
+                  #"https://www.planetadelibros.com.ar/libros/novela-historica/00013/p/1?q=30",
                   #"https://www.planetadelibros.com.ar/libros/novela-literaria/00012/p/1?q=30",
-                  "https://www.planetadelibros.com.ar/libros/novela-negra/00015/p/1?q=30",
+                  #"https://www.planetadelibros.com.ar/libros/novela-negra/00015/p/1?q=30",
                   #"https://www.planetadelibros.com.ar/libros/novelas-romanticas/00014/p/1?q=30",
-                  "https://www.planetadelibros.com.ar/libros/poesia/00051/p/1?q=30",
+                  #"https://www.planetadelibros.com.ar/libros/poesia/00051/p/1?q=30",
                   "https://www.planetadelibros.com.ar/libros/teatro/00052/p/1?q=30"]
     
     AJAX_URL = "https://www.planetadelibros.com.ar/includes/ajax_canales_venda.php?soporte="
@@ -42,12 +42,11 @@ class spiders(scrapy.Spider):
         # Get all book ids on the page
         all_book_ids = response.css('div.comprar span::attr(data-book-id)').getall()
         all_books_data_sites = [self.AJAX_URL + book_id for book_id in all_book_ids]
-
         for book_site in all_books_data_sites:
             # Keep track of duplicate books
             if (book_site, category) in self.links:
                self.num_duplicates += 1
-               if self.num_duplicates % 100 == 0:
+               if self.num_duplicates % 10 == 0:
                    print(f"[COUNT] Processed {self.num_duplicates} duplicates.")
                continue
             else:
@@ -103,7 +102,7 @@ class spiders(scrapy.Spider):
             else:
                 self.tracking_third_party_links.add((link, response.meta['category'], title, author))
                 yield scrapy.Request(link, callback=self.parse_third_party, dont_filter=True, meta={'item': item, 'url': link, 'siteName': site_name, 'bookTitle':item['title']})
-        
+
     def parse_third_party(self, response):
         soup = BeautifulSoup(response.body, 'lxml')
         book_item = response.meta['item']
@@ -122,6 +121,7 @@ class spiders(scrapy.Spider):
             book_item['ISBN'] = planeta_helper.ISBM
             book_item['formato'] = planeta_helper.formato
             book_item['presentacion'] = planeta_helper.presentacion
+            print("Added book", book_item['title'])
         else: # Third party site
             price = ThirdPartyHelper()
             price.populate_price(soup, response.meta['url'], response.meta['bookTitle'])
