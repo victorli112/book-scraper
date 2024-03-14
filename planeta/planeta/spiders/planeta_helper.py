@@ -6,7 +6,7 @@ class PlanetaHelper:
         self.price = None
         self.fecha_publicacion = None
         self.idoma = None
-        self.ISBM = None
+        self.ISBN = None
         self.formato = None
         self.presentacion = None
         
@@ -42,7 +42,7 @@ class PlanetaHelper:
         
         ISBN_tag = book_soup.find('td', text='ISBN')
         if ISBN_tag:
-            self.ISBM = ISBN_tag.find_next_sibling('td').text.strip()
+            self.ISBN = ISBN_tag.find_next_sibling('td').text.strip()
         
         formato_tag = book_soup.find('td', text='Formato')
         if formato_tag:
