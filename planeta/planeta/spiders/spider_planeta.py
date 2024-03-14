@@ -113,6 +113,7 @@ class spiders(scrapy.Spider):
                 planeta_helper.populate_planeta_basic_info(soup, response.meta['bookTitle'])
             except:
                 # No book found
+                print("Failed to populate", response.meta['bookTitle'], response.meta['url'])
                 return
             
             book_item['price'] = planeta_helper.price
