@@ -129,10 +129,27 @@ class spiders(scrapy.Spider):
     def parse_third_party(self, response):
         soup = BeautifulSoup(response.body, 'lxml')
         book_item = response.meta['item']
-        price = ThirdPartyHelper()
-        price.populate_price(soup, response.meta['url'], response.meta['bookTitle'])
-        item = SThirdPartyPrices(name=price.name, price=price.price, discount=price.discount)
-        book_item['third_party_prices'].append(item)
+        
+        if response.meta["siteName"] == "Mercadolibre": # Main site with book details
+            planeta_helper = PlanetaHelper()
+            try:
+                planeta_helper.populate_planeta_basic_info(soup, response.meta['bookTitle'])
+            except:
+                # No book found
+                return
+            
+            book_item['price'] = planeta_helper.price
+            book_item['fecha_publicacion'] = planeta_helper.fecha_publicacion
+            book_item['idoma'] = planeta_helper.idoma
+            book_item['ISBN'] = planeta_helper.ISBM
+            book_item['formato'] = planeta_helper.formato
+            book_item['presentacion'] = planeta_helper.presentacion
+            print("Added book", book_item['title'])
+        else: # Third party site
+            price = ThirdPartyHelper()
+            price.populate_price(soup, response.meta['url'], response.meta['bookTitle'])
+            item = SThirdPartyPrices(name=price.name, price=price.price, discount=price.discount)
+            book_item['third_party_prices'].append(item)
             
         return book_item
         
