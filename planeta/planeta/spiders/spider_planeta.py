@@ -10,11 +10,11 @@ class spiders(scrapy.Spider):
     name = "planeta-scraper"
     handle_httpstatus_list = [404, 500]
     start_urls = [#"https://www.planetadelibros.com.ar/libros/novelas/00038/p/1?q=30"
-                  #"https://www.planetadelibros.com.ar/libros/novela-historica/00013/p/1?q=30",
+                  "https://www.planetadelibros.com.ar/libros/novela-historica/00013/p/1?q=30",
                   #"https://www.planetadelibros.com.ar/libros/novela-literaria/00012/p/1?q=30",
                   #"https://www.planetadelibros.com.ar/libros/novela-negra/00015/p/1?q=30",
                   #"https://www.planetadelibros.com.ar/libros/novelas-romanticas/00014/p/1?q=30",
-                  #"https://www.planetadelibros.com.ar/libros/poesia/00051/p/1?q=30",
+                  "https://www.planetadelibros.com.ar/libros/poesia/00051/p/1?q=30",
                   "https://www.planetadelibros.com.ar/libros/teatro/00052/p/1?q=30"]
     
     AJAX_URL = "https://www.planetadelibros.com.ar/includes/ajax_canales_venda.php?soporte=" # + book_id
@@ -44,23 +44,20 @@ class spiders(scrapy.Spider):
         # Get all book ids on the page
         all_book_ids = response.css('div.comprar span::attr(data-book-id)').getall()
         all_books_data_sites = [self.AJAX_URL + book_id for book_id in all_book_ids]
-        print("Amount of books on page", len(all_books_data_sites))
         for book_site in all_books_data_sites:
             # Keep track of duplicate books
             if (book_site, category) in self.links:
                self.num_duplicates += 1
-               if self.num_duplicates % 1 == 0:
+               if self.num_duplicates % 10 == 0:
                    print(f"[COUNT] Processed {self.num_duplicates} duplicates.")
                continue
             else:
                 self.links.add((book_site, category))
-            print("On book", book_site)
             yield scrapy.Request(book_site, callback=self.parse_book_links, meta={'category': category, 'bookCatalogSite': response.request.url}, dont_filter=True)
 
         # Go to next page if it exists and there are books on this page
         next_page = response.css('div.paginacio-seguent a::attr(href)').get()
         if next_page:
-            print("Going to next page")
             yield scrapy.Request(next_page, callback=self.parse)
             
     def parse_book_links(self, response):
@@ -99,7 +96,7 @@ class spiders(scrapy.Spider):
         )
         
         # Iterate through all third party links
-        for site_name, link in third_party_links.items():
+        for _, link in third_party_links.items():
             if any(x in link for x in self.dont_parse_third_party):
                 continue
             elif (link, response.meta['category'], title, author) in self.tracking_third_party_links:
@@ -119,7 +116,7 @@ class spiders(scrapy.Spider):
             except:
                 # The book is probably obsolete
                 self.num_skipped_books += 1
-                if self.num_skipped_books % 1 == 0:
+                if self.num_skipped_books % 10 == 0:
                     print(f"[SKIPPED] Skipped {self.num_skipped_books} books.")
                 return
             
