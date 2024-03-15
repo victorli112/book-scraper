@@ -9,13 +9,14 @@ from planeta.spiders.third_party_helper import ThirdPartyHelper
 class spiders(scrapy.Spider):
     name = "planeta-scraper"
     handle_httpstatus_list = [404, 500]
-    start_urls = [#"https://www.planetadelibros.com.ar/libros/novelas/00038/p/1?q=30"
-                  "https://www.planetadelibros.com.ar/libros/novela-historica/00013/p/1?q=30",
+    start_urls = [#"https://www.planetadelibros.com.ar/libros/novelas/00038/p/1?q=30"]
+                  #"https://www.planetadelibros.com.ar/libros/novela-historica/00013/p/1?q=30",
                   #"https://www.planetadelibros.com.ar/libros/novela-literaria/00012/p/1?q=30",
                   #"https://www.planetadelibros.com.ar/libros/novela-negra/00015/p/1?q=30",
-                  #"https://www.planetadelibros.com.ar/libros/novelas-romanticas/00014/p/1?q=30",
-                  "https://www.planetadelibros.com.ar/libros/poesia/00051/p/1?q=30",
-                  "https://www.planetadelibros.com.ar/libros/teatro/00052/p/1?q=30"]
+                  "https://www.planetadelibros.com.ar/libros/novelas-romanticas/00014/p/1?q=30",
+                  #"https://www.planetadelibros.com.ar/libros/poesia/00051/p/1?q=30",
+                  #"https://www.planetadelibros.com.ar/libros/teatro/00052/p/1?q=30"]
+                  ]
     
     AJAX_URL = "https://www.planetadelibros.com.ar/includes/ajax_canales_venda.php?soporte=" # + book_id
     SEARCH_URL = "https://tienda.planetadelibros.com.ar/search?q=" # + ISBN
@@ -78,7 +79,8 @@ class spiders(scrapy.Spider):
             author = book_soup.find("div", class_="autor").text.strip()
             price = book_soup.find("div", class_="preu").text.strip().replace(" ", "")
         except:
-            print("++[ERROR]++ Cant get author or title", response.url)
+            self.num_skipped_books += 1
+            #print("++[ERROR]++ Cant get author or title", response.url)
             return 
         
         # Create empty scrapy item to hold information
