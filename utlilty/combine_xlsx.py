@@ -39,4 +39,4 @@ def combine_xlsx(doc1, doc2, output_file):
     # Close the Pandas Excel writer and output the Excel file
     writer.close()
 
-combine_xlsx("contemp.xlsx","other_categories.xlsx", "penguin_random_house_books.xlsx")
+combine_xlsx("rest.xlsx", "comtempAndLiteraria.xlsx", "groupo_planeta_books.xlsx")
