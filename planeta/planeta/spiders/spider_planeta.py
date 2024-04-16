@@ -4,19 +4,13 @@ import scrapy
 from planeta.items import SBook, SThirdPartyPrices
 from planeta.spiders.planeta_helper import PlanetaHelper
 from planeta.spiders.third_party_helper import ThirdPartyHelper
+from planeta.batches import CURRENT_BATCH
 
 # do the same as scrape_prh.py but with scrapy
 class spiders(scrapy.Spider):
     name = "planeta-scraper"
     handle_httpstatus_list = [404, 500]
-    start_urls = [#"https://www.planetadelibros.com.ar/libros/novelas/00038/p/1?q=30"]
-                  #"https://www.planetadelibros.com.ar/libros/novela-historica/00013/p/1?q=30",
-                  #"https://www.planetadelibros.com.ar/libros/novela-literaria/00012/p/1?q=30",
-                  "https://www.planetadelibros.com.ar/libros/novela-negra/00015/p/1?q=30",
-                  #"https://www.planetadelibros.com.ar/libros/novelas-romanticas/00014/p/1?q=30",
-                  #"https://www.planetadelibros.com.ar/libros/poesia/00051/p/1?q=30",
-                  #"https://www.planetadelibros.com.ar/libros/teatro/00052/p/1?q=30"]
-                  ]
+    start_urls = CURRENT_BATCH.get("start_urls")
     
     AJAX_URL = "https://www.planetadelibros.com.ar/includes/ajax_canales_venda.php?soporte=" # + book_id
     SEARCH_URL = "https://tienda.planetadelibros.com.ar/search?q=" # + ISBN
@@ -26,6 +20,7 @@ class spiders(scrapy.Spider):
         "RETRY_HTTP_CODES": [502, 503, 504, 522, 524, 408, 429, 400],
         "handle_httpstatus_list": [404, 500],
     }
+    
     dont_parse_third_party = ["bajalibros", "play", "goto", "amazon", "audible", "casassaylorenzo", "books", "itunes", "casadellibro", "storytel", "es"]
     links = set()
     tracking_third_party_links = set()

@@ -6,7 +6,7 @@
 
 # useful for handling different item types with a single interface
 from xlsxwriter import Workbook
-
+from planeta.batches import CURRENT_BATCH
 from planeta.items import SBook
 
 THIRD_PARTY_PLANETA = ['Tematika', 'Cuspide', 'SBS_Liberia', 'Tras_los_Pasos', 'Libros_de_la_Arena', 'Libreria_Palito', 'Libreria_Santa_Fe']
@@ -29,7 +29,7 @@ class ExcelWriterPipeline:
         print(f"FINAL Processed {self.num_books} books, counts of each category: {[(k, len(v)) for k, v in self.results.items()]}")
         
         ordered_columns = ['Title', 'Author', 'Price', 'Fecha Publicacion', 'Idoma', 'ISBN', 'Formato', 'Presentacion', 'price_in_Tematika', 'discount_Tematika', 'price_in_Cuspide', 'discount_Cuspide', 'price_in_SBS_Liberia', 'discount_SBS_Liberia', 'price_in_Tras_los_Pasos', 'discount_Tras_los_Pasos', 'price_in_Libros_de_la_Arena', 'discount_Libros_de_la_Arena', 'price_in_Libreria_Palito', 'discount_Libreria_Palito', 'price_in_Libreria_Santa_Fe', 'discount_Libreria_Santa_Fe']
-        wb = Workbook("negra.xlsx")
+        wb = Workbook(CURRENT_BATCH.get('output_file'))
 
         for category, books in self.results.items():
             ws = wb.add_worksheet(category)
