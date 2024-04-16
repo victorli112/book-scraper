@@ -8,6 +8,7 @@
 from xlsxwriter import Workbook
 
 from prh.items import SBook
+from prh.batches import CURRENT_BATCH
 
 THIRD_PARTY_PRH = ['Librenta', 'Buscalibre', 'Tematika', 'SBS_Liberia', 'Libreria_Hernandez', 'Cuspide', 'Tras_los_Pasos']
 class ExcelWriterPipeline:
@@ -27,20 +28,11 @@ class ExcelWriterPipeline:
         self.num_books = 0
         
     def close_spider(self, spider):
-        # Clean the data
-        # {title : {Title: x, Author: y}, title2: {Title: x, Author: y}}
-        # for title, info in self.results.items():
-        #     for key, value in info.items():
-        #         if not value and key.startswith('discount'):
-        #             self.results[title][key] = '0%'
-        #         elif not value and key.startswith('price'):
-        #             self.results[title][key] = '-1'
-        
         # TO EXCEL 
         print(f"FINAL Processed {self.num_books} books, counts of each category: {[(k, len(v)) for k, v in self.results.items()]}")
         
         ordered_columns = ['Title', 'Author', 'Price', 'Publication Date', 'Imprint', 'Colleccion', 'Paginas', 'Target de Edad', 'Tipo de Encuadernacion', 'Idioma', 'Fecha de Publicacion', 'Autor', 'Editorial', 'Referencia', 'price_in_Librenta', 'discount_Librenta', 'price_in_Buscalibre', 'discount_Buscalibre', 'price_in_Tematika', 'discount_Tematika', 'price_in_SBS_Liberia', 'discount_SBS_Liberia', 'price_in_Libreria_Hernandez', 'discount_Libreria_Hernandez', 'price_in_Cuspide', 'discount_Cuspide', 'price_in_Tras_los_Pasos', 'discount_Tras_los_Pasos']
-        wb = Workbook("penguin_random_house_books.xlsx")
+        wb = Workbook(CURRENT_BATCH.get("output_file"))
 
         for category, books in self.results.items():
             ws = wb.add_worksheet(category)

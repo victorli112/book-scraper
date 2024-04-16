@@ -4,20 +4,13 @@ import scrapy
 from prh.items import SBook, SPRHDetails, SThirdPartyPrices
 from prh.spiders.prh_helper import PRHHelper
 from prh.spiders.third_party_helper import ThirdPartyHelper
+from prh.batches import CURRENT_BATCH
 
 # do the same as scrape_prh.py but with scrapy
 class spiders(scrapy.Spider):
     name = "prh-scraper"
     handle_httpstatus_list = [404, 500]
-    start_urls = ["https://www.penguinlibros.com/ar/40915-aventuras",
-                 "https://www.penguinlibros.com/ar/40919-fantasia",
-                 #"https://www.penguinlibros.com/ar/40925-literatura-contemporanea?pageno=50",]
-                 "https://www.penguinlibros.com/ar/40929-novela-negra-misterio-y-thriller",
-                 "https://www.penguinlibros.com/ar/40933-poesia",
-                 "https://www.penguinlibros.com/ar/40917-ciencia-ficcion",
-                 "https://www.penguinlibros.com/ar/40923-grandes-clasicos",
-                 "https://www.penguinlibros.com/ar/40927-novela-historica",
-                 "https://www.penguinlibros.com/ar/40931-novela-romantica"]
+    start_urls = CURRENT_BATCH.get("start_urls")
     
     
     RETRY_HTTP_CODES = [502, 503, 504, 522, 524, 408, 429, 400]
@@ -58,14 +51,13 @@ class spiders(scrapy.Spider):
         # Go to next page if it exists and there are books on this page
         if "pageno" in response.request.url:
             next_page = response.request.url.split("pageno=")[0] + "pageno=" + str(int(response.request.url.split("pageno=")[1]) + 1)
-            #page = int(response.request.url.split("pageno=")[1]) + 1
         else:
             next_page = response.request.url + "?pageno=2"
-            #page = 2
+        
         if next_page and len(all_books) > 0:
             #batching
-            #if page > 49:
-            #    print(f'On page {page}')
+            if CURRENT_BATCH.get("end_page") and int(next_page.split("pageno=")[1]) > CURRENT_BATCH.get("end_page"):
+               return
             yield scrapy.Request(next_page, callback=self.parse)
             
     def parse_book(self, response):
