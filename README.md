@@ -18,7 +18,7 @@ I have noticed that the spiders will skip URLs if there are too many links for s
 1. Modify `batches.py` file in the directory, **only `CURRENT_BATCH` at the bottom needs to be changed**
 2. Make sure you are at the root directory (`/book-scraper/planeta/`), then run the spider using `scrapy crawl planeta-scraper` or `scrapy crawl prh-scraper`
 3. When it is finished, the .xlxs file will be in the root directory
-4. When scraping is done for all batches, you will need to run `python3 combine_planeta.py` or `python3 combine_prh.py` in the utility directory
+4. When scraping is done for all batches, you will need to run `python3 utility/combine_planeta.py` or `python3 utility/combine_prh.py` in the utility directory
 5. The final xlsx file will be `planeta_books.xlsx` or `prh_books.xlsx`
 
 ### Penguin Random House https://www.penguinlibros.com/ar/
