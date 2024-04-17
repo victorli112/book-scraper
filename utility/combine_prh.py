@@ -2,11 +2,11 @@ import pandas as pd
 
 def combine_xlsx(output_file):
     # Load the Excel files
-    xlsx1 = pd.ExcelFile("aventuras_and_fantasia_and_grandes_clasicos.xlsx")
-    xlsx2 = pd.ExcelFile("literatura_contemp_1.xlsx")
-    xlsx3 = pd.ExcelFile("literatura_contemp_2.xlsx")
-    xlsx4 = pd.ExcelFile("novela_negra_and_ciencia_and_poesia.xlsx")
-    xlsx5 = pd.ExcelFile("novela_romantica_and_historica.xlsx")
+    xlsx1 = pd.ExcelFile("prh/aventuras_and_fantasia_and_grandes_clasicos.xlsx")
+    xlsx2 = pd.ExcelFile("prh/literatura_contemp_1.xlsx")
+    xlsx3 = pd.ExcelFile("prh/literatura_contemp_2.xlsx")
+    xlsx4 = pd.ExcelFile("prh/novela_negra_and_ciencia_and_poesia.xlsx")
+    xlsx5 = pd.ExcelFile("prh/novela_romantica_and_historica.xlsx")
 
     # Get the sheet names
     sheet_names = xlsx1.sheet_names
